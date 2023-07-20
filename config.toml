@@ -1,4 +1,2 @@
-port = 8765
-ip = '0.0.0.0'
-
+chief_host = 'chief.placenl.nl'
 user1 = 'faefaefaf'

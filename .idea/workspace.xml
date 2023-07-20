@@ -5,22 +5,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/brand.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/disable_capability.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/enable_capability.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/get_capabilities.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/get_order.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/get_subscriptions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/stats.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/subscribe.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/handelers/unsubscribe.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/brand.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/clientold.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/clientold2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/disable_capability.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/enable_capability.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/error.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/get_capabilities.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/get_subscriptions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/subscribe.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clientold/unsubscribe.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.toml" beforeDir="false" afterPath="$PROJECT_DIR$/config.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/handelers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/brand.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/disable_capability.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/enable_capability.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/get_capabilities.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/get_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/clientold/get_order.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/get_subscriptions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/clientold/stats.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/subscribe.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/handelers/unsubscribe.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +58,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl/client",
+    "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -59,13 +69,44 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/client" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/clientold" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/handelers" />
       <recent name="$PROJECT_DIR$/client" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="clientold2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="headless_placenl" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/clientold/clientold2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.clientold2" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -76,6 +117,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
+      <workItem from="1689852615468" duration="9413000" />
     </task>
     <servers />
   </component>
@@ -83,4 +125,18 @@
     <option name="version" value="3" />
   </component>
   <component name="V Toolchain" url="$USER_HOME$/.local/share/v" />
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/clientold/clientold2.py</url>
+          <line>7</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/headless_placenl$client.coverage" NAME="clientold2 Coverage Results" MODIFIED="1689856557501" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
 </project>
