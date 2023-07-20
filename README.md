@@ -11,3 +11,5 @@ To install the dependencies run `poetry install`
 Start the client with `poetry run gaanmetdiebanaan`
 
 If you have problems with poetry just delete `poetry.lock` and try again.
+
+<h2 style="color: red"> Werkt nog niet. Maar kan wel de brand updaten :)</h2>
