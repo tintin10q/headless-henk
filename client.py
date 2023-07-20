@@ -1,73 +1,62 @@
-print("Starting client")
-
-import asyncio
-import websockets
-import json
-
-from handelers import *
-from colors import *
-
-async def handle_client(websocket, path):
-    async for message in websocket:
-        try:
-            data = json.loads(message)
-            if 'type' not in data:
-                return await send_error(websocket, 'invalidPayload', 'noType')
-            message_type = data['type']
-            match message_type:
-                case 'pong':
-                    await handle_pong(websocket)
-                case 'brand':
-                    await handle_brand(websocket, data.get('payload'))
-                case 'getOrder':
-                    await handle_get_order(websocket)
-                case 'getStats':
-                    await handle_get_stats(websocket)
-                case 'getCapabilities':
-                    await handle_get_capabilities(websocket)
-                case 'enableCapability':
-                    await handle_enable_capability(websocket, data.get('payload'))
-                case 'disableCapability':
-                    await handle_disable_capability(websocket, data.get('payload'))
-                case 'getSubscriptions':
-                    await handle_get_subscriptions(websocket)
-                case 'subscribe':
-                    await handle_subscribe(websocket, data.get('payload'))
-                case 'unsubscribe':
-                    await handle_unsubscribe(websocket, data.get('payload'))
-                case _:
-                    await send_error(websocket, 'invalidPayload', 'unknownType')
-        except json.JSONDecodeError:
-            await send_error(websocket, 'invalidMessage', 'failedToParseJSON')
-        except Exception as e:
-            print(f"Error processing message: {e}")
-            await send_error(websocket, 'unknownError', str(e))
-
-async def handle_pong(websocket):
-    # Handle the 'pong' message
-    # Reset keepalive timer, if needed
-    print("Received 'pong' message")
+from .brand import send_brand
+from .stats import send_getStats
+from .get_order import send_getOrder
+from .get_capabilities import send_getCapabilities
+from .enable_capability import send_enable_capability
+from .disable_capability import send_disable_capability
+from .get_subscriptions import send_getSubscriptions
+from .subscribe import send_subscribe
+from .unsubscribe import send_unsubscribe
 
 
-async def send_error(websocket, error_type, error_detail):
-    error_message = {
-        'type': 'error',
-        'payload': {
-            'type': error_type,
-            'detail': error_detail
-        }
-    }
-    await websocket.send(json.dumps(error_message))
+class Client():
+    def __init__(self):
+        uri = f"wss://{chief_host}/ws"  # Replace with your server's WebSocket endpoint
+        async with websockets.connect(uri) as websocket:
+            # Send a sample 'brand' message to the server
+            print(type(websocket))
+            brand_payload = {
+                'author': 'Quinten',
+                'name': 'Headless PLACENL Client',
+                'version': '1.0'
+            }
+            await client.send_brand(websocket, **brand_payload)
 
-async def start_server():
-    from config import ip, port
-    server = await websockets.serve(handle_client, ip, port)
+            # Receive messages from the server
+            await receive_messages(websocket)
 
-    print(f"Server started on {PURPLE}{ip}{RESET}:{GREEN}{port}{RESET}")
-    await server.wait_closed()
+    async def send_getCapabilities(websocket):
+        print("Received get capabilities message")
 
-def start():
-    asyncio.get_event_loop().run_until_complete(start_server())
+    async def send_getOrder(websocket):
+        # Handle the 'getOrder' message
+        # Send the 'order' message with the latest orders
+        print("Received 'getOrder' message")
 
-if __name__ == '__main__':
-    start()
+    async def send_getStats(websocket):
+        # Handle the 'getStats' message
+        # Send the 'stats' message with current server statistics
+        print("Received 'getStats' message")
+
+    async def send_unsubscribe(websocket, payload):
+        print("got get unsubscribe")
+
+    async def send_subscribe(websocket, payload):
+        print("got get subscription message")
+
+    async def send_getSubscriptions(websocket):
+        print("get subscriptions")
+
+    async def send_disable_capability(websocket, payload):
+        print("disable capability")
+
+
+# === Add colors.py to path ===
+import sys
+import os
+# Assuming 'colors.py' is located in the same directory as 'side_package'
+# If it's in a different location, provide the correct path accordingly.
+colors_file_path = os.path.join(os.path.dirname(__file__), '../colors.py')
+
+if colors_file_path not in sys.path:
+    sys.path.insert(0, colors_file_path)
