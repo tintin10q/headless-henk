@@ -11,17 +11,17 @@ from dataclasses import dataclass
 R = RESET
 
 class Client:
-    def __init__(self, config: "Config" = None):
-        if config is None:
-            config = load_config()
-        uri = f"wss://{config.chief_host}/ws"  # Replace with your server's WebSocket endpoint
-        self.chief_host = config.chief_host
+    def __init__(self, configuration: Config = None):
+        if configuration is None:
+            configuration = load_config()
+        uri = f"wss://{configuration.chief_host}/ws"  # Replace with your server's WebSocket endpoint
+        self.chief_host = configuration.chief_host
         self.uri = uri
         self.websocket: websockets.legacy.client.WebSocketClientProtocol = None
-        self.config: Config = config
+        self.config: Config = configuration
 
-        # Set after hello has been send
-        self.id : str = None
+        # Set after hello has been sent
+        self.id: str = None
         self.keepaliveTimeout: int = None
         self.keepaliveInterval: int = None
 
@@ -100,7 +100,7 @@ class Client:
             }
         }
 
-        print(RED+ f"Sending error message: {error_type} with {error_detail}" + R)
+        print(RED + f"Sending error message: {error_type} with {error_detail}" + R)
 
         await self.websocket.send(json.dumps(error_message))
 
