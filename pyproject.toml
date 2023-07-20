@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "headless-placenl"
+version = "0.1.0"
+description = "A headless placenl bot for 2023"
+authors = ["Quinten Cabo <tintin10q@hotmail.com>"]
+readme = "README.md"
+packages = [{include = "gaanmetdiebanaan.py"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+websockets = "^11.0.3"
+toml = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+gaanmetdiebanaan = 'gaanmetdiebanaan:gaan'
