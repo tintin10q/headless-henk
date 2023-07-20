@@ -28,5 +28,4 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
           tags: ghcr.io/tintin10q/headless_placenl:latest
