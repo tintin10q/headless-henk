@@ -5,32 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/clientold/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/brand.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/clientold.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/clientold2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/disable_capability.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/enable_capability.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/error.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/get_capabilities.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/get_subscriptions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/subscribe.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clientold/unsubscribe.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/autoplace.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/req.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.toml" beforeDir="false" afterPath="$PROJECT_DIR$/config.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.toml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/handelers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/brand.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/disable_capability.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/enable_capability.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/get_capabilities.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/get_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/clientold/get_order.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/get_subscriptions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/clientold/stats.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/subscribe.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/handelers/unsubscribe.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +100,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="9413000" />
+      <workItem from="1689852615468" duration="22266000" />
     </task>
     <servers />
   </component>

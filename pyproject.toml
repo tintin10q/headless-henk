@@ -10,6 +10,7 @@ packages = [{include = "gaanmetdiebanaan.py"}]
 python = "^3.10"
 websockets = "^11.0.3"
 toml = "^0.10.2"
+requests = "^2.31.0"
 
 
 [build-system]
