@@ -117,6 +117,7 @@ class Client:
 
         print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x}{GREEN}, y={AQUA}{y}{GREEN} on canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
+        loop2.run_until_complete(self.send_enable_placeNOW_capability())
         reddit.place_pixel(self.config, coords, colorIndex)
 
         # Schedule the next timer
