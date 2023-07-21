@@ -2,14 +2,25 @@ import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
+from colors import BOLD, RESET
+
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headless {BOLD}placeNL{RESET} autoplacer writen in python.")
+parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
+args = parser.parse_args()
+
+configfilepath = args.config
+
 from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN
 
 import os
 
-if not os.path.exists('./config.toml'):
-    print(PURPLE, 'config.toml', RESET + YELLOW + "file not found. Created empty config file please fill it in auth_token", RESET)
-    with open('config.toml', 'w+') as config_file:
-        starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': 'chief.placenl.nl'}
+if not os.path.exists(configfilepath):
+    print(PURPLE, configfilepath, RESET + YELLOW + "file not found. Try to create empty config file please fill it in with your auth_token", RESET)
+    with open(configfilepath, 'w+') as config_file:
+        starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': 'chief.placenl.nl', 'stats': False}
         toml.dump(starter_config, config_file)
     exit(0)
 
@@ -58,7 +69,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
     if __config is not None:
         return __config
 
-    with open("config.toml", "r") as config_file:
+    with open(configfilepath, "r") as config_file:
         config_dict = toml.load(config_file)
 
         chief_host = config_dict.get("chief_host", default_chief_host)

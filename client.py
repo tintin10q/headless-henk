@@ -6,7 +6,10 @@ from typing import Literal
 from pprint import pprint
 import json
 import datetime
+import threading
+import random
 
+import canvas
 import images
 import reddit
 from colors import *
@@ -38,8 +41,7 @@ class Client:
         self.current_order: Order | None = None
         self.differences = []
 
-        # self.next_place_time = reddit.place_pixel(self.config, (50, 50), 3)
-        self.next_place_time = 0
+        self.place_cooldown = 0
         self.can_place = False
 
         # Set after hello has been sent
@@ -47,15 +49,21 @@ class Client:
         self.keepaliveTimeout: int | None = None
         self.keepaliveInterval: int | None = None
 
-    async def connect(self):
-        print(f"{now()} {GREEN}Checking reddit token...")
+        self.place_timer: threading.Timer | None = None
+        self.pong_timer: threading.Timer | None = None
 
-        self.next_place_time = reddit.get_place_cooldown(self.config.auth_token)
-        self.can_place = self.next_place_time is not None
+    async def connect(self):
+        printc(f"{now()} {GREEN}Checking reddit token...")
+
+        self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+        self.can_place = self.place_cooldown is not None  # If this is none the token is not valid
 
         if not self.can_place:
-            print(f"{now()} {RED}This token can not place pixels! Just showing stats")
-            self.config.stats = True
+            printc(f"{now()} {RED}This token can not place pixels!")
+            exit(0)
+
+        self.place_timer = threading.Timer(self.place_cooldown + 10, self.place_pixel)
+        self.place_timer.start()
 
         async with websockets.connect(self.uri) as websocket:
             # Send a sample 'brand' message to the server
@@ -63,7 +71,40 @@ class Client:
 
             # Receive messages from the server
             await self.receive_messages()
-        self.websocket = None
+        self.websocket = None  # why
+
+    def place_pixel(self):
+        """ Actually place a pixel hype"""
+        delay = 10
+        if not self.id:
+            self.place_timer = threading.Timer(delay, self.place_pixel)
+            self.place_timer.start()
+            return  # Silent return if we do not have an id yet
+
+        if not self.differences:
+            print(f"{now()} {LIGHTGREEN}No pixels have to be placed!{R}")
+
+            self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+            print(f"{now()} {LIGHTGREEN}Try to place pixels again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
+
+            self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
+            self.place_timer.start()
+            return
+
+        # pick a random pixel and place it
+        random_index = random.randrange(len(self.differences))
+        difference = self.differences[random_index]
+
+        x, y = difference[0], difference[1]
+        canvasIndex = canvas.xy_to_canvasIndex(x, y)
+
+        print("Placing difference", difference)
+
+        self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+
+        self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
+        print(f"{now()} {LIGHTGREEN}Playing next pixel in {AQUA}{self.place_cooldown + delay / 60:2.2f}{LIGHTGREEN} minutes!{R}")
+        self.place_timer.start()
 
     async def receive_messages(self):
         """ Do the basic parsing of an incoming message, separate type and payload
@@ -155,7 +196,7 @@ class Client:
         print(BLUE + f"{now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
         match message_type:
             case 'ping':
-                await self.handle_pong()
+                await self.handle_ping()
             case 'hello':
                 await self.handle_hello(payload)
             case 'brandUpdated':
@@ -165,7 +206,8 @@ class Client:
                     await self.handle_order(payload)
                 except asyncio.exceptions.TimeoutError:
                     print(f"{now()} {RED}Timed Out on handeling the order, lets try again")
-                    await self.send_ping()
+                    self.pong_timer.cancel()
+                    await self.send_pong()
                     await self.handle_message(message_type, payload)
             case 'stats':
                 self.handle_stats(payload)
@@ -197,17 +239,26 @@ class Client:
         self.id = payload['id']
         self.keepaliveInterval = payload['keepaliveInterval']
         self.keepaliveTimeout = payload['keepaliveTimeout']
+
         print(f"{now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
         await gather(self.send_brand(), self.send_getStats(), self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability())
 
         await gather(self.subscribe_to_announcements(), self.subscribe_to_orders() if self.can_place else asyncio.sleep(1), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
 
-    async def handle_pong(self):
-        await self.send_ping()
+    async def handle_ping(self):
+        if not (self.pong_timer and not self.pong_timer.finished):
+            await self.send_pong()
 
-    async def send_ping(self):
+    async def send_pong(self):
         await self.send_message('pong')
+
+    def send_pong_job(self):
+        print(now(), f"{GREEN}Pong from other thread to stay alive")
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(self.send_pong())
+        self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
+        self.pong_timer.start()
 
     def handle_stats(self, payload: dict):
         match payload:
@@ -245,9 +296,15 @@ class Client:
         self.current_order = parse_order(payload)
         print(self.current_order)
 
+        # Set a timer for sending pong messages in the background
+        self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
+        self.pong_timer.start()
+
         self.differences = await images.get_pixel_differences_with_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
+
         print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
-        await self.send_ping()
+
+        self.pong_timer.cancel()
 
     @staticmethod
     def handle_announcement(payload):
@@ -298,4 +355,3 @@ class Client:
 
     def handle_disabledCapability(self, payload):
         printc(f"{now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
-

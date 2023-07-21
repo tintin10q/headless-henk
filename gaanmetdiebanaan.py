@@ -11,14 +11,18 @@ from reddit import Coordinates
 
 async def main():
     config = load_config()
+    # make client
+    client = Client(config)
 
     while True:
         try:
-            # make client
-            client = Client(config)
             await client.connect()
         except TimeoutError:
             print(f"{now()} We got disconnected. Lets try connect again in 4 seconds")
+            if client.place_timer:
+                client.place_timer.cancel()
+            if client.pong_timer:
+                client.pong_timer.cancel()
             time.sleep(4)
         else:  # If another error happened then just let it die
             break

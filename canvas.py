@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Literal
+from typing import List, Literal, Tuple
 
 import httpx
 from io import BytesIO
@@ -64,7 +64,7 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -
 def download_and_save_canvas():
     # Replace the image_ids list with the actual IDs of the available parts.
     image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [
-        None, 1, 3, None, 4, 5
+        None, 1, 2, None, 4, 5
     ]
 
     async def go():
@@ -76,6 +76,23 @@ def download_and_save_canvas():
             print(f"Error building canvas image: {e}")
 
     asyncio.get_event_loop().run_until_complete(go())
+
+
+def xy_to_canvasIndex(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
+    if x < 1000 and y < 1000: return 0
+    if x < 1000 and y >= 1000: return 3
+
+    if 1000 >= x < 2000 and y < 1000: return 1
+    if 2000 > x <= 1000 <= y: return 4
+
+    if 2000 >= x and y < 1000: return 2
+    if 2000 >= x and y >= 1000: return 5
+
+
+def colorTuple_to_colorIndex(colorTuple: Tuple[int,int,int,int]) -> int:
+    match colorTuple:
+        case _:
+            raise ValueError("Invalid Color!")
 
 
 if __name__ == "__main__":
