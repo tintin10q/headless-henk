@@ -76,9 +76,9 @@ class Client:
         """ Actually place a pixel hype"""
         delay = 10
 
-        loop = asyncio.get_event_loop()
+        loop2 = asyncio.new_event_loop()
 
-        self.differences = loop.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+        self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
 
         if not self.id:
             self.place_timer = threading.Timer(delay, self.place_pixel)
