@@ -1,8 +1,11 @@
 import time
 
+import reddit
 from client import Client
 from config import load_config, Config
 import asyncio
+
+from reddit import Coordinates
 
 
 async def main():
@@ -14,19 +17,11 @@ async def main():
 
 
 def gaan():
-    while True:
+    # config = load_config()
+    # coords = Coordinates(3, 600, 1)
+    # reddit.place_pixel(config, coords, 3)
 
-        try:
-            asyncio.get_event_loop().run_until_complete(main())
-        except Exception as e:
-            print("Sometimg failed at the highest level", e)
-            print("We are just going to wait a bit and then restart")
-            time.sleep(1)
-
-
-
-
-
+    asyncio.get_event_loop().run_until_complete(main())
 
 
 if __name__ == '__main__':

@@ -50,12 +50,12 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -
     # Create the final canvas image.
     full_canvas = Image.new('RGBA', (final_canvas_width, final_canvas_height))
 
-    for i in range(6): # There are 6 canvases
+    for i in range(6):  # There are 6 canvases
         if i in canvas_parts:
             canvas_part = canvas_parts[i]
             x = 1000 * i % 3000
             y = 1000 if i > 2 else 0
-            print(i, x,y)
+            # print(i, x,y)
             full_canvas.paste(canvas_part, (x, y))
 
     return full_canvas

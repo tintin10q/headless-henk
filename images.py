@@ -27,7 +27,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
     """
     canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes), download_image(order.images.order))
 
-    chief_template.save("chieftemplate.png")
+    # chief_template.save("chieftemplate.png")
 
     width, height = order.size.width, order.size.height
 

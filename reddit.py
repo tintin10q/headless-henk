@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import httpx
 import ojson
 import ojson as json
+import requests
 import websockets
 
 from colors import GREEN, printc, RESET, RED, AQUA
@@ -53,29 +54,43 @@ VALID_COLORS = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8'
                 '#E4ABFF', '#DE107F', '#FF3881', '#FF99AA', '#6D482F', '#9C6926', '#FFB470', '#000000', '#515252', '#898D90', '#D4D7D9', '#FFFFFF'];
 
 
-async def place_pixel(config: Config, coords: Coordinates, color=3):
-    print("got to the reqeust")
+def place_pixel(config: Config, coords: Coordinates, color=3):
+    print("got to the place pixel reqeust", coords)
 
-    data = f"""{{\"operationName\":\"setPixel\",\"variables\":{{\"input\":{{\"actionName\":\"r/replace:set_pixel\",\"PixelMessageData\":{{\"coordinate\":{{\"x\":{coords.x},\"y\":{coords.y}}},\"colorIndex\":{colorIndex},\"canvasIndex\":{coords.canvasIndex}}}}}}},\"query\":\"mutation setPixel($input: ActInput!) {{\\n  act(input: $input) {{\\n    data {{\\n      ... on BasicMessage {{\\n        id\\n        data {{\\n          ... on GetUserCooldownResponseMessageData {{\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }}\\n          ... on SetPixelResponseMessageData {{\\n            timestamp\\n            __typename\\n          }}\\n          __typename\\n        }}\\n        __typename\\n      }}\\n      __typename\\n    }}\\n    __typename\\n  }}\\n}}\\n\"}}""",
+    data = {
+        'operationName': 'setPixel',
+        'variables': {
+            'input': {
+                'actionName': 'r/replace:set_pixel',
+                'PixelMessageData': {
+                    'coordinate': {"x": coords.x, 'y': coords.y},
+                    'colorIndex': color,
+                    'canvasIndex': coords.canvasIndex
+                }
+            }
+        },
+        'query': 'mutation setPixel($input: ActInput!) {\n  act(input: $input) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n            __typename\n          }\n          ... on SetPixelResponseMessageData {\n            timestamp\n            __typename\n          }\n          __typename\n        }\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n'
+    }
 
     headers = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0",
-        "Accept": "*/*",
-        "Accept-Language": "en-US,en;q=0.5",
-        "content-type": "application/json",
+        'content-type': 'application/json',
         "authorization": config.auth_token,
-        "apollographql-client-name": "garlic-bread",
-        "apollographql-client-version": "0.0.1",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site"
+        'apollographql-client-name': 'garlic-bread',
+        'apollographql-client-version': '0.0.1',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site'
     }
-    async with httpx.AsyncClient() as client:
-        # if this is broken we move back to requests
-        set_pixel = await client.post(config.reddit_uri_https, data=data, headers=headers)
+
+    print(config.reddit_uri_https)
+    set_pixel = requests.post(config.reddit_uri_https, json=data, headers=headers)
+    print("hi")
     print("set pixel", set_pixel.status_code)
     print("set pixel response", set_pixel.text)
-    # return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
+
+
+# return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
 
 
 def test_authorization(authorization: str) -> bool:
@@ -146,6 +161,7 @@ class LiveCanvas:
     """ A live connection which updates the same image in memory with the difference, this way we don't have to fetch the whole canvas every time
         todo make this actually work
     """
+
     def __init__(self, config):
         self.websocket = None
         self.config = config
@@ -194,14 +210,20 @@ class LiveCanvas:
                 print("GOT:", message)
 
 
-async def get_place_cooldown(authorization: str) -> int | None:
-    next_time = await get_nextAvailablePixelTimestamp(authorization)
+def get_place_cooldown(authorization: str) -> int | None:
+    """
+    If this is 0 there is no cooldown
+    :param authorization:
+    :return:
+    """
+    next_time = get_nextAvailablePixelTimestamp(authorization)
     if next_time is None:
         return None
     diff = next_time - time.time() / 1000
     return int(max((diff, 0)))
 
-async def get_nextAvailablePixelTimestamp(authorization) -> int | None:
+
+def get_nextAvailablePixelTimestamp(authorization: str) -> int | None:
     if not authorization:
         return None
 
@@ -216,23 +238,31 @@ async def get_nextAvailablePixelTimestamp(authorization) -> int | None:
     }
 
     payload = {
-        'query': 'mutation GetPersonalizedTimer{\n  act(\n    input: {actionName: "r/replace:get_user_cooldown"}\n  ) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on GetUserCooldownResponseMessageData {\n            nextAvailablePixelTimestamp\n          }\n        }\n      }\n    }\n  }\n}\n\n\nsubscription SUBSCRIBE_TO_CONFIG_UPDATE {\n  subscribe(input: {channel: {teamOwner: GARLICBREAD, category: CONFIG}}) {\n    id\n    ... on BasicMessage {\n      data {\n        ... on ConfigurationMessageData {\n          __typename\n          colorPalette {\n            colors {\n              hex\n              index\n            }\n          }\n          canvasConfigurations {\n            dx\n            dy\n            index\n          }\n          canvasWidth\n          canvasHeight\n        }\n      }\n    }\n  }\n}\n\n\nsubscription SUBSCRIBE_TO_CANVAS_UPDATE {\n  subscribe(\n    input: {channel: {teamOwner: GARLICBREAD, category: CANVAS, tag: "0"}}\n  ) {\n    id\n    ... on BasicMessage {\n      id\n      data {\n        __typename\n        ... on DiffFrameMessageData {\n          currentTimestamp\n          previousTimestamp\n          name\n        }\n        ... on FullFrameMessageData {\n          __typename\n          name\n          timestamp\n        }\n      }\n    }\n  }\n}\n\n\n\n\nmutation SET_PIXEL {\n  act(\n    input: {actionName: "r/replace:set_pixel", PixelMessageData: {coordinate: { x: 53, y: 35}, colorIndex: 3, canvasIndex: 0}}\n  ) {\n    data {\n      ... on BasicMessage {\n        id\n        data {\n          ... on SetPixelResponseMessageData {\n            timestamp\n          }\n        }\n      }\n    }\n  }\n}\n\n\n\n\n# subscription configuration($input: SubscribeInput!) {\n#     subscribe(input: $input) {\n#       id\n#       ... on BasicMessage {\n#         data {\n#           __typename\n#           ... on RReplaceConfigurationMessageData {\n#             colorPalette {\n#               colors {\n#                 hex\n#                 index\n#               }\n#             }\n#             canvasConfigurations {\n#               index\n#               dx\n#               dy\n#             }\n#             canvasWidth\n#             canvasHeight\n#           }\n#         }\n#       }\n#     }\n#   }\n\n# subscription replace($input: SubscribeInput!) {\n#   subscribe(input: $input) {\n#     id\n#     ... on BasicMessage {\n#       data {\n#         __typename\n#         ... on RReplaceFullFrameMessageData {\n#           name\n#           timestamp\n#         }\n#         ... on RReplaceDiffFrameMessageData {\n#           name\n#           currentTimestamp\n#           previousTimestamp\n#         }\n#       }\n#     }\n#   }\n# }\n',
-        'variables': {
-            'input': {
-                'channel': {
-                    'teamOwner': 'GARLICBREAD',
-                    'category': 'R_REPLACE',
-                    'tag': 'canvas:0:frames'
-                }
-            }
-        },
+
+        'query': """
+mutation GetPersonalizedTimer{
+  act(
+    input: {actionName: "r/replace:get_user_cooldown"}
+  ) {
+    data {
+      ... on BasicMessage {
+        id
+        data {
+          ... on GetUserCooldownResponseMessageData {
+            nextAvailablePixelTimestamp
+          }
+        }
+      }
+    }
+  }
+}
+""",
         'operationName': 'GetPersonalizedTimer',
         'id': None
     }
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post('https://gql-realtime-2.reddit.com/query', json=payload, headers=headers)
-    print(response.status_code, response.text)
+    response = requests.post('https://gql-realtime-2.reddit.com/query', json=payload, headers=headers)
+    # print(response.status_code, response.text)
 
     data = response.json()
 
@@ -241,7 +271,7 @@ async def get_nextAvailablePixelTimestamp(authorization) -> int | None:
 
     ts = data['data']['act']['data'][0]['data']['nextAvailablePixelTimestamp']
 
-    return 1 if not ts else ts
+    return 0 if not ts else ts
 
 
 async def get_new_anon_session() -> dict:
