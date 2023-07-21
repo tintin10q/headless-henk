@@ -144,3 +144,18 @@ def parse_order(payload: dict) -> Order:
             return order
         case _:
             raise ValueError("Could not parse order object!")
+
+
+example_order = {'createdAt': '2023-07-20T22:56:11.310Z',
+                         'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
+                                     'name': 'meinth'},
+                         'id': '16f67468-0625-4c0c-82f6-805cb6021820',
+                         'images': {'order': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820.png',
+                                    'priority': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820-priority.png'},
+                         'message': 'Mark Rutte heeft weer prioriteit',
+                         'offset': {'x': -500, 'y': -500},
+                         'size': {'height': 1000, 'width': 1000}}
+
+
+def download_order_image():
+   ...
