@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  henk:
+    image: ghcr.io/tintin10q/headless-henk:latest
+    restart: always
+    volumes:
+    - ./config:/config
+    command: "--config=/config/config.toml"
