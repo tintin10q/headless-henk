@@ -145,9 +145,7 @@ async def get_canvas_url(canvas_id: Literal[0, 1, 2, 3, 4, 5]) -> str:
 class LiveCanvas:
     """ A live connection which updates the same image in memory with the difference, this way we don't have to fetch the whole canvas every time
         todo make this actually work
-
     """
-
     def __init__(self, config):
         self.websocket = None
         self.config = config
@@ -196,15 +194,14 @@ class LiveCanvas:
                 print("GOT:", message)
 
 
-def get_place_cooldown(authorization: str) -> int | None:
-    next_time = get_nextAvailablePixelTimestamp(authorization)
+async def get_place_cooldown(authorization: str) -> int | None:
+    next_time = await get_nextAvailablePixelTimestamp(authorization)
     if next_time is None:
         return None
     diff = next_time - time.time() / 1000
     return int(max((diff, 0)))
 
-
-def get_nextAvailablePixelTimestamp(authorization) -> int | None:
+async def get_nextAvailablePixelTimestamp(authorization) -> int | None:
     if not authorization:
         return None
 
@@ -233,7 +230,8 @@ def get_nextAvailablePixelTimestamp(authorization) -> int | None:
         'id': None
     }
 
-    response = requests.post('https://gql-realtime-2.reddit.com/query', json=payload, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post('https://gql-realtime-2.reddit.com/query', json=payload, headers=headers)
     print(response.status_code, response.text)
 
     data = response.json()
@@ -246,13 +244,14 @@ def get_nextAvailablePixelTimestamp(authorization) -> int | None:
     return 1 if not ts else ts
 
 
-def get_new_anon_session() -> dict:
+async def get_new_anon_session() -> dict:
     printc(f"{now()} {GREEN}Fetching new anon access token from {RED}reddit{GREEN}, this may take a bit")
-    response = requests.get('https://reddit.com/r/place',
-                            headers={
-                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/116.0'
-                            })
+    async with httpx.AsyncClient() as client:
+        response = await client.get('https://reddit.com/r/place',
+                                    headers={
+                                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/116.0'
+                                    })
     body = response.text
 
     # todo: yuck

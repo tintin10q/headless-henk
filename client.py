@@ -210,7 +210,7 @@ class Client:
         self.current_order = parse_order(payload)
         print(self.current_order)
 
-        self.differences = await images.get_pixel_differences(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
+        self.differences = await images.get_pixel_differences_with_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
         print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
     @staticmethod
