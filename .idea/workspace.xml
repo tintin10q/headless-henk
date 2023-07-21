@@ -4,16 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/autoplace.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/req.js" afterDir="false" />
+    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Updating poetry files">
+      <change afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.toml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/req.js" beforeDir="false" afterPath="$PROJECT_DIR$/now.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +36,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "V_FMT": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
     "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl",
@@ -100,14 +98,65 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="22266000" />
+      <workItem from="1689852615468" duration="31031000" />
     </task>
+    <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
+      <option name="closed" value="true" />
+      <created>1689881767802</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1689881767802</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Code to place">
+      <option name="closed" value="true" />
+      <created>1689881778745</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1689881778745</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Client is now using the config">
+      <option name="closed" value="true" />
+      <created>1689881809475</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1689881809475</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Updating poetry files">
+      <option name="closed" value="true" />
+      <created>1689881834306</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1689881834306</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="V Toolchain" url="$USER_HOME$/.local/share/v" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it" />
+    <MESSAGE value="Code to place" />
+    <MESSAGE value="Client is now using the config" />
+    <MESSAGE value="Updating poetry files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updating poetry files" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
