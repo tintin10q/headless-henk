@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from types import NoneType
 from typing import List
 
-from colors import PURPLE, RESET, GREEN
+from colors import PURPLE, RESET, GREEN, AQUA
 
 
 @dataclass
@@ -76,9 +76,12 @@ class Order:
 
     def __repr__(self) -> str:
         ln = '\n'
-        return f"""--== Order ==--
-{f"{GREEN}Message: {PURPLE}{self.message}{RESET}{ln}" if self.message else ''} \
-{GREEN}Created at: {PURPLE}{self.createdAt}{RESET}"""
+        result = f"{PURPLE}--== Order ==--{RESET}\n" \
+                 f"{GREEN}Created at: {AQUA}{self.createdAt}{RESET}\n" \
+                 f"{f'{GREEN}Created by: {AQUA}{self.creator.name}{RESET}{ln}' if self.creator else ''}" \
+                 f"{f'{GREEN}Message: {AQUA}{self.message}{RESET}{ln}' if self.message else ''}"
+        return result
+
 
 
 def parse_order(payload: dict) -> Order:
@@ -140,4 +143,4 @@ def parse_order(payload: dict) -> Order:
             order = Order(id=id, message=message, createdAt=createdAt, creator=creator, images=images, size=size, offset=offset)
             return order
         case _:
-            raise ValueError("Could not parse size object in order!")
+            raise ValueError("Could not parse order object!")
