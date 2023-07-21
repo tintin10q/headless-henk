@@ -28,9 +28,9 @@ default_chief_host = 'chief.placenl.nl'
 class Config:
     auth_token: str
     chief_host: str = default_chief_host
-    author: str = "quinten_c"
+    author: str = "Quinten-C"
     version: str = '0.1.0'
-    name: str = 'placeNL_headless'
+    name: str = 'Henk_py'
     reddit_uri: str = default_reddit_uri
 
     def get_brand_payload(self) -> Brand:
