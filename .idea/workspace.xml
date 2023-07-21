@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Updated workspace I guess">
+    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Added working Stats message and messed around with colors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parse_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +95,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="36544000" />
+      <workItem from="1689852615468" duration="38548000" />
     </task>
     <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
       <option name="closed" value="true" />
@@ -171,7 +169,39 @@
       <option name="project" value="LOCAL" />
       <updated>1689898530044</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Updated readme with some more instructions and a cooler name">
+      <option name="closed" value="true" />
+      <created>1689902980293</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1689902980293</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Updated readme with some more instructions and a cooler name">
+      <option name="closed" value="true" />
+      <created>1689902989288</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1689902989288</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Added created by to the __repr__ of Order">
+      <option name="closed" value="true" />
+      <created>1689903017343</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1689903017343</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Added working Stats message and messed around with colors">
+      <option name="closed" value="true" />
+      <created>1689903059101</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1689903059101</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -199,7 +229,10 @@
     <MESSAGE value="Added function to parse an order coming in from the server into dataclasses" />
     <MESSAGE value="Added announcement handler, removed client sending errors - only the server can send errors, added order parsing and non functional stats handler" />
     <MESSAGE value="Updated workspace I guess" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated workspace I guess" />
+    <MESSAGE value="Updated readme with some more instructions and a cooler name" />
+    <MESSAGE value="Added created by to the __repr__ of Order" />
+    <MESSAGE value="Added working Stats message and messed around with colors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added working Stats message and messed around with colors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

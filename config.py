@@ -32,6 +32,7 @@ class Config:
     version: str = '0.1.0'
     name: str = 'Headless-Henk'
     reddit_uri: str = default_reddit_uri
+    stats: bool = False
 
     def get_brand_payload(self) -> Brand:
         brand = {
@@ -55,24 +56,19 @@ def load_config() -> Config:
     with open("config.toml", "r") as config_file:
         config_dict = toml.load(config_file)
 
-    match config_dict:
-        # Deze heeft chief host, reddit_host en auth_token
-        case {"chief_host": str(chief_host), "reddit_host": str(reddit_host), "auth_token": str(auth_token)}:
+        chief_host = config_dict.get("chief_host", default_chief_host)
+        reddit_uri = config_dict.get("reddit_uri", default_reddit_uri)
+        auth_token = config_dict.get("auth_token", None)
+        stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
+
+        if auth_token and reddit_uri and chief_host:
             print(BLUE, "Starting with chief host:", RESET, PURPLE, chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if chief_host != default_chief_host else "")
-            print(BLUE, "Starting with reddit api host:", RESET, PURPLE, reddit_host, RESET, YELLOW + "Custom reddit host be careful" + RESET if reddit_host != default_reddit_uri else "")
+            print(BLUE, "Starting with reddit api host:", RESET, PURPLE, reddit_uri, RESET, YELLOW + "Custom reddit host be careful" + RESET if reddit_uri != default_reddit_uri else "")
             if not auth_token.startswith("Bearer "):
-                print(RED, "Invalid auth token, it doesn't start with 'Bearer '", RESET)
+                print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
                 exit(1)
-            __config = Config(auth_token=auth_token, chief_host=chief_host)
-        # Deze heeft alleen chief host
-        case {"chief_host": str(chief_host), "auth_token": str(auth_token)}:
-            print(BLUE, "Starting with chief host:", RESET, PURPLE, chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if chief_host != default_chief_host else "")
-            print(BLUE, "Starting with reddit api host:", RESET, PURPLE, default_reddit_uri, RESET)
-            if not auth_token.startswith("Bearer "):
-                print(RED, "Invalid auth token, it doesn't start with 'Bearer '", RESET)
-                exit(1)
-            __config = Config(auth_token=auth_token, chief_host=chief_host)
-            return Config(auth_token=auth_token, chief_host=chief_host)
-        case _:
-            print(f"{RED}Invalid configuration: we need {RESET}{BLUE}chief_host{RESET} {RED}fields{RESET}")
+            __config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri=reddit_uri)
+            return __config
+        else:
+            print(RED, "Missing auth_token ")
             exit(1)

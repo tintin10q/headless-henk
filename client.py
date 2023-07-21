@@ -1,3 +1,5 @@
+from asyncio import gather
+
 import websockets
 from typing import Literal
 from pprint import pprint
@@ -101,9 +103,8 @@ class Client:
 
         if payload is not None:
             message['payload'] = payload
-            print(now(), YELLOW, f"Added payload to {BLUE}{message_type}{BLUE} message", R)
 
-        print(YELLOW + f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} with payload:{R}" + STOP, message, PURPLE, end=RESET)
+        print(f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} ", end=R)
         pprint(payload)
         await self.websocket.send(json.dumps(message))
         printc(GREEN + f"{now()} {GREEN}Sent message: {R}{message}")
@@ -115,7 +116,7 @@ class Client:
         # print(RED + f"Sending error message: {error_type} with {error_detail}" + R)
         # await self.websocket.send(json.dumps(error_message))
 
-    async def handle_message(self, message_type: str, payload: dict | None):
+    async def handle_message(self, message_type: str, payload: dict | str | None):
         # Todo remove with : {payload}
         print(BLUE + f"{now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
         match message_type:
@@ -124,13 +125,19 @@ class Client:
             case 'hello':
                 await self.handle_hello(payload)
             case 'brandUpdated':
-                printc(now(), GREEN, "Brand has been updated successfully!")
+                print(f"{now()} {GREEN}Brand has been updated successfully!{R}")
             case 'order':
                 self.handle_order(payload)
             case 'stats':
                 self.handle_stats(payload)
             case 'announcement':
                 self.handle_announcement(payload)
+            case 'subscribed':
+                self.handle_subscribed(payload)
+            case 'unsubscribed':
+                self.handle_unsubscribed(payload)
+            case 'disconnect':
+                self.handle_disconnect(payload)
             case 'error':
                 print(RED, "Got error from the server!", R, end="")
                 pprint(payload)
@@ -149,11 +156,13 @@ class Client:
         self.id = payload['id']
         self.keepaliveInterval = payload['keepaliveInterval']
         self.keepaliveTimeout = payload['keepaliveTimeout']
-        print(f"{GREEN}Client id: {AQUA}{self.id}")
+        print(f"{now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
         await self.send_brand()
         await self.send_getOrder()
         await self.send_getStats()
+
+        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders(), self.subscribe_to_stats() if self.config.stats else None)
 
     async def handle_pong(self):
         await self.send_ping()
@@ -198,16 +207,17 @@ class Client:
         print(self.current_order)
 
         example_order = {'createdAt': '2023-07-20T22:56:11.310Z',
-                   'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
-                               'name': 'meinth'},
-                   'id': '16f67468-0625-4c0c-82f6-805cb6021820',
-                   'images': {'order': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820.png',
-                              'priority': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820-priority.png'},
-                   'message': 'Mark Rutte heeft weer prioriteit',
-                   'offset': {'x': -500, 'y': -500},
-                   'size': {'height': 1000, 'width': 1000}}
+                         'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
+                                     'name': 'meinth'},
+                         'id': '16f67468-0625-4c0c-82f6-805cb6021820',
+                         'images': {'order': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820.png',
+                                    'priority': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820-priority.png'},
+                         'message': 'Mark Rutte heeft weer prioriteit',
+                         'offset': {'x': -500, 'y': -500},
+                         'size': {'height': 1000, 'width': 1000}}
 
-    def handle_announcement(self, payload):
+    @staticmethod
+    def handle_announcement(payload):
         match payload:
             case {"message": str(message), "important": important}:
                 print(f"\n{LIGHTPURPLE}{PURPLE_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
@@ -216,6 +226,35 @@ class Client:
                 print(now(), "Got announcement but couldn't parse it...🤔")
                 pprint(payload)
                 raise ValueError(f"Could not parse announcement: {payload}")
+
+    async def subscribe_to_announcements(self):
+        await self.send_message("subscribe", "announcements")
+
+    async def subscribe_to_orders(self):
+        await self.send_message("subscribe", "orders")
+
+    async def subscribe_to_stats(self):
+        await self.send_message("subscribe", "stats")
+
+    async def unsubscribe_to_announcements(self):
+        await self.send_message("unsubscribe", "announcements")
+
+    async def unsubscribe_to_orders(self):
+        await self.send_message("unsubscribe", "orders")
+
+    async def unsubscribe_to_stats(self):
+        await self.send_message("unsubscribe", "stats")
+
+    def handle_unsubscribed(self, payload: str):
+        print(f"{now()} {RED}Disabled {AQUA}{payload}{RED} subscription{R}")
+
+    def handle_subscribed(self, payload: str):
+        print(f"{now()} {GREEN}Enabled {AQUA}{payload}{GREEN} subscription{R}")
+
+    def handle_disconnect(self, payload: dict):
+        match payload:
+            case {"reason":str(reason), "message": str(message)}:
+                print(f"{now()}{RED}We are being disconnected shortly (Code={reason}).{R} {message}")
 
 
 def check_connected(self, method):
