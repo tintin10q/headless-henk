@@ -86,6 +86,9 @@ class Client:
                 pprint(message)
                 await self.log_error(str(type(e)), str(e))
 
+                if isinstance(e, TimeoutError):
+                    raise e
+
     async def send_getCapabilities(self):
         print("Received get capabilities message")
 
@@ -158,7 +161,12 @@ class Client:
             case 'brandUpdated':
                 print(f"{now()} {GREEN}Brand has been updated successfully!{R}")
             case 'order':
-                await self.handle_order(payload)
+                try:
+                    await self.handle_order(payload)
+                except asyncio.exceptions.TimeoutError:
+                    print(f"{now()} {RED}Timed Out on handeling the order, lets try again")
+                    await self.send_ping()
+                    await self.handle_message(message_type, payload)
             case 'stats':
                 self.handle_stats(payload)
             case 'announcement':
@@ -280,6 +288,8 @@ class Client:
         match payload:
             case {"reason": str(reason), "message": str(message)}:
                 print(f"{now()}{RED}We are being disconnected shortly (Code={reason}).{R} {message}")
+                if reason == "timedOut":
+                    raise TimeoutError(message)
 
     def handle_enableCapability(self, payload):
         printc(f"{now()} {GREEN}Enabled {AQUA}{payload}{GREEN} capability")
@@ -289,19 +299,3 @@ class Client:
     def handle_disabledCapability(self, payload):
         printc(f"{now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
 
-
-def check_connected(self, method):
-    if self.websocket is None:
-        raise ValueError(f"Not connected to {self.host} call connect first")
-
-
-# === Add colors.py to path ===
-import sys
-import os
-
-# Assuming 'colors.py' is located in the same directory as 'side_package'
-# If it's in a different location, provide the correct path accordingly.
-colors_file_path = os.path.join(os.path.dirname(__file__), '../colors.py')
-
-if colors_file_path not in sys.path:
-    sys.path.insert(0, colors_file_path)

@@ -27,7 +27,8 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
     """
     canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes), download_image(order.images.order))
 
-    # chief_template.save("chieftemplate.png")
+    # we don't need to save this but its nice
+    chief_template.save("chieftemplate.png")
 
     width, height = order.size.width, order.size.height
 
@@ -59,11 +60,19 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
     for x in range(width):
         for y in range(height):
             template_pixel = chief_template.getpixel((x, y))
+
             match template_pixel:
-                case (0, 0, 0, 0):
+                case 0 | (0, 0, 0, 0):
                     continue
+
             canvas_pixel = canvas.getpixel((x + offsetX, y + offsetY))
-            print(canvas_pixel, template_pixel)
+
+            # Dit is wip voor als het 4 bit pngs worden, ok laten we pixels gaan plaatsen
+            # match (canvas_pixel, template_pixel):
+            #     case ( (0, 0, 0, 255), 1 ) | ( (255, 168, 0, 255), 4 ) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255), 6 ):
+            #         continue
+
+            print('case (', canvas_pixel, ',', template_pixel, '): continue')
 
             if canvas_pixel != template_pixel:
                 diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))

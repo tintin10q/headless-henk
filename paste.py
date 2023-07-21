@@ -8,8 +8,7 @@ from PIL import Image
 canvas = Image.open("canvas.png")
 chief_template = Image.open("chieftemplate.png")
 
-# canvas.paste(chief_template, (1000, 500))
-
+canvas.paste(chief_template, (1000, 500))
 
 print(len(images.get_pixel_differences(canvas, chief_template)))
 canvas.save("AAcanvas.png")

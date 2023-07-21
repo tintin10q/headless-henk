@@ -5,15 +5,23 @@ from client import Client
 from config import load_config, Config
 import asyncio
 
+from now import now
 from reddit import Coordinates
 
 
 async def main():
     config = load_config()
 
-    # make client
-    client = Client(config)
-    await client.connect()
+    while True:
+        try:
+            # make client
+            client = Client(config)
+            await client.connect()
+        except TimeoutError:
+            print(f"{now()} We got disconnected. Lets try connect again in 4 seconds")
+            time.sleep(4)
+        else:  # If another error happened then just let it die
+            break
 
 
 def gaan():
