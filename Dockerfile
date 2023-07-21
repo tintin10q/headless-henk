@@ -1,7 +1,11 @@
-FROM ubuntu
-RUN apt-get update && apt-get install -y python3 curl && apt-get clean
+FROM debian
 WORKDIR /workdir
-RUN curl -sSL https://install.python-poetry.org | python3 -
-COPY . .
-RUN /root/.local/bin/poetry install
-CMD /root/.local/bin/poetry run gaanmetdiebanaan
+COPY requirements.txt .
+RUN apt-get update && \
+	apt-get install -y python3 python3-pip --no-install-recommends && \
+	python3 -m pip install -r requirements.txt --break-system-packages && \
+	apt-get purge -y python3-pip && \
+	apt-get autopurge -y && \
+	apt-get clean
+COPY . ./
+ENTRYPOINT python3 gaanmetdiebanaan.py
