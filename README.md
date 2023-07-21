@@ -1,5 +1,5 @@
 # Headless Henk
-A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python](https://www.python.org/).
+A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python](https://www.python.org/) 3.10.
 
 To install the dependencies run `poetry install` 
 
