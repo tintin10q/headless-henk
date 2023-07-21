@@ -5,11 +5,9 @@ permissions:
 
 on:
   push:
-    branches:
-    - main
-    - rubentest
+    branches: [ main ]
 env:
-  REGISTRY_IMAGE: ghcr.io/rubennl/headless_placenl
+  REGISTRY_IMAGE: ghcr.io/tintin10q/headless_placenl
 jobs:
   build:
     name: build
