@@ -3,6 +3,8 @@
 config.toml
 canvas.png
 chieftemplate.png
+.venv
+reddit_session.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

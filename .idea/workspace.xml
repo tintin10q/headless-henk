@@ -4,17 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Ignored the canvas image file now instead of the code file">
-      <change afterPath="$PROJECT_DIR$/images.py" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/paste.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canvas.py" beforeDir="false" afterPath="$PROJECT_DIR$/canvas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parse_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images.py" beforeDir="false" afterPath="$PROJECT_DIR$/images.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reddit.py" beforeDir="false" afterPath="$PROJECT_DIR$/reddit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,22 +32,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "V_FMT": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl/gaanmetdiebanaan.py",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;V_FMT&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/qc/Projecten/place/headless_placenl/gaanmetdiebanaan.py&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -131,7 +126,8 @@
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
       <workItem from="1689852615468" duration="55392000" />
-      <workItem from="1689929307526" duration="9536000" />
+      <workItem from="1689929307526" duration="11133000" />
+      <workItem from="1689940596491" duration="328000" />
     </task>
     <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
       <option name="closed" value="true" />
@@ -293,7 +289,15 @@
       <option name="project" value="LOCAL" />
       <updated>1689935871015</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Added offset to order __repl__. Switched to httpx from requests. Pixel comparing works but the offset is wrong">
+      <option name="closed" value="true" />
+      <created>1689939167794</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1689939167794</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -330,7 +334,8 @@
     <MESSAGE value="Added pillow dependency and renamed autoplace.py to reddit.py" />
     <MESSAGE value="Added canvas fetching" />
     <MESSAGE value="Ignored the canvas image file now instead of the code file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ignored the canvas image file now instead of the code file" />
+    <MESSAGE value="Added offset to order __repl__. Switched to httpx from requests. Pixel comparing works but the offset is wrong" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added offset to order __repl__. Switched to httpx from requests. Pixel comparing works but the offset is wrong" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -339,11 +344,6 @@
           <url>file://$PROJECT_DIR$/clientold/clientold2.py</url>
           <line>7</line>
           <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/client.py</url>
-          <line>168</line>
-          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

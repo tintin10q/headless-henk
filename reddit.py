@@ -97,7 +97,7 @@ async def get_canvas_url(canvas_id: Literal[0, 1, 2, 3, 4, 5]) -> str:
     # todo we could also have an image class which keeps the socket connection open and updates the differences
 
     config = load_config(ignore_missing_auth=True)
-    printc(f"{now()} {GREEN}Fetching canvas with id: {AQUA}{canvas_id}")
+    printc(f"{now()} {GREEN}Fetching canvas with id: {AQUA}{canvas_id}{GREEN}")
 
     anon_authorization = get_anon_authorization()
 

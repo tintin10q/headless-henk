@@ -1,3 +1,4 @@
+import asyncio
 from asyncio import gather
 
 import websockets
@@ -128,7 +129,6 @@ class Client:
             case 'ping':
                 await self.handle_pong()
             case 'hello':
-                print("OK GOING to handle hellow now")
                 await self.handle_hello(payload)
             case 'brandUpdated':
                 print(f"{now()} {GREEN}Brand has been updated successfully!{R}")
@@ -166,8 +166,7 @@ class Client:
 
         await gather(self.send_brand(), self.send_getStats(), self.send_getOrder())
 
-        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders(), self.subscribe_to_stats() if self.config.stats else None)
-        print("HI")
+        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders(), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
 
     async def handle_pong(self):
         await self.send_ping()

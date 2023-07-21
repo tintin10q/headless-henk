@@ -4,13 +4,17 @@ from typing import List, Literal
 import httpx
 from io import BytesIO
 from PIL import Image
+
+from colors import printc, GREEN, RESET, BLUE
+from now import now
 from parse_order import Order
 from canvas import build_canvas_image
 
 
 async def download_image(url):
+    printc(f"{now()} {GREEN} downloading image from {BLUE}{url}{RESET}")
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
     return Image.open(BytesIO(response.content))
 
@@ -23,33 +27,20 @@ async def get_pixel_differences(order: Order, canvas_indexes: List[Literal[0, 1,
     """
     canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes), download_image(order.images.order))
 
+    chief_template.save("chieftemplate.png")
+
     width, height = order.size.width, order.size.height
 
     diff_pixels = []
 
     for x in range(width):
         for y in range(height):
-            pixel1 = canvas.getpixel((x + order.offset.x, y + order.offset.y))
-            pixel2 = chief_template.getpixel((x, y))
+            canvas_pixel = canvas.getpixel((x, y + order.offset.y * -1))
+            template_pixel = chief_template.getpixel((x, y))
+            print(canvas_pixel,template_pixel)
 
-            if pixel1 != pixel2:
-                diff_pixels.append((x + order.offset.x, y + order.offset.y, pixel1, pixel2))
+
+            if canvas_pixel != template_pixel:
+                diff_pixels.append((x + order.offset.x, y + order.offset.y, canvas_pixel, template_pixel))
 
     return diff_pixels
-
-# if __name__ == "__main__":
-#     url1 = "URL_TO_BIGGER_IMAGE"
-#     url2 = "URL_TO_SMALLER_IMAGE"
-#
-#     # offset_x = 100  # Replace with the actual x-coordinate offset
-#     # offset_y = 50   # Replace with the actual y-coordinate offset
-#
-#     image1 = download_image(url1)
-#     image2 = download_image(url2)
-#
-#     differences = get_pixel_differences(image1, image2, , offset_y)
-#
-#     print("Pixel differences:")
-#     for diff in differences:
-#         x, y, pixel1, pixel2 = diff
-#         print(f"At ({x}, {y}): Image1 - {pixel1}, Image2 - {pixel2}")

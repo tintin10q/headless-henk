@@ -36,6 +36,16 @@ There is also a docker available at: [https://github.com/tintin10q/headless-henk
 
 <h2 style="color: red; font-size:15pt"> Werkt nog niet. Maar kan wel de brand updaten :)</h2>
 
+## Using Pip
+
+If you do not want to use poetry you can also just make a virtual environment yourself. Ensure you are running `python3.10`, run `python --version`. Henk won't work with lower python than 3.10.
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python gaanmetdiebanaan.py
+```
+
 # Downloading the Canvas
 
 As a bonus feature you can run 
