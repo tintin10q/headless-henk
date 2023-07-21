@@ -3,7 +3,7 @@ from client import Client
 from config import load_config
 import asyncio
 
-from autoplace import send_request, Coordinates
+from reddit import send_request, Coordinates
 
 async def main():
     # make client

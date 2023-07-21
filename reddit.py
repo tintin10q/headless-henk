@@ -57,3 +57,19 @@ def send_request(authorization: str, coords: Coordinates, color = 3):
                                   })
     print("set pixel", set_pixel.status_code)
     print("set pixel response", set_pixel.text)
+
+def test_authorization(authorization: str):
+    return requests.post(config.reddit_uri,
+                                  data=f"""{{\"operationName\":\"setPixel\",\"variables\":{{\"input\":{{\"actionName\":\"r/replace:set_pixel\",\"PixelMessageData\":{{\"coordinate\":{{\"x\":{coords.x},\"y\":{coords.y}}},\"colorIndex\":{colorIndex},\"canvasIndex\":{coords.canvasIndex}}}}}}},\"query\":\"mutation setPixel($input: ActInput!) {{\\n  act(input: $input) {{\\n    data {{\\n      ... on BasicMessage {{\\n        id\\n        data {{\\n          ... on GetUserCooldownResponseMessageData {{\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }}\\n          ... on SetPixelResponseMessageData {{\\n            timestamp\\n            __typename\\n          }}\\n          __typename\\n        }}\\n        __typename\\n      }}\\n      __typename\\n    }}\\n    __typename\\n  }}\\n}}\\n\"}}""",
+                                  headers={
+                                      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0",
+                                      "Accept": "*/*",
+                                      "Accept-Language": "en-US,en;q=0.5",
+                                      "content-type": "application/json",
+                                      "authorization": authorization,
+                                      "apollographql-client-name": "garlic-bread",
+                                      "apollographql-client-version": "0.0.1",
+                                      "Sec-Fetch-Dest": "empty",
+                                      "Sec-Fetch-Mode": "cors",
+                                      "Sec-Fetch-Site": "same-site"
+                                  }).status_code == 200

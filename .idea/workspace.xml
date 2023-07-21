@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Added working Stats message and messed around with colors">
+    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Moved example order from client to parse_order.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/autoplace.py" beforeDir="false" afterPath="$PROJECT_DIR$/reddit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="38548000" />
+      <workItem from="1689852615468" duration="39574000" />
     </task>
     <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
       <option name="closed" value="true" />
@@ -201,7 +203,39 @@
       <option name="project" value="LOCAL" />
       <updated>1689903059101</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="We can now deal with all messages which are not capabilities. Let's get the comparing of canvas going. Also redid config to allow for optional stats boolean config which turns on the stats message">
+      <option name="closed" value="true" />
+      <created>1689905137519</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1689905137519</updated>
+    </task>
+    <task id="LOCAL-00015" summary="added python version to README.md">
+      <option name="closed" value="true" />
+      <created>1689905249838</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1689905249838</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Moved example order from client to parse_order.py">
+      <option name="closed" value="true" />
+      <created>1689905324631</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1689905324631</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Moved example order from client to parse_order.py">
+      <option name="closed" value="true" />
+      <created>1689905337761</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1689905337761</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -232,7 +266,10 @@
     <MESSAGE value="Updated readme with some more instructions and a cooler name" />
     <MESSAGE value="Added created by to the __repr__ of Order" />
     <MESSAGE value="Added working Stats message and messed around with colors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added working Stats message and messed around with colors" />
+    <MESSAGE value="We can now deal with all messages which are not capabilities. Let's get the comparing of canvas going. Also redid config to allow for optional stats boolean config which turns on the stats message" />
+    <MESSAGE value="added python version to README.md" />
+    <MESSAGE value="Moved example order from client to parse_order.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved example order from client to parse_order.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
