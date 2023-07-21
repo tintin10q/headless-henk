@@ -66,7 +66,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
         reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
         auth_token = config_dict.get("auth_token", None)
         stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
-        canvas_ids = config_dict.get("canvas_indexes", [None, 1, None, None, 4, None, None])  # The canvas ids to watch
+        canvas_ids = config_dict.get("canvas_indexes", [None, 1, 3, None, 4, 5])  # The canvas ids to watch
 
         if (ignore_missing_auth or auth_token) and reddit_uri_wss and reddit_uri_https and chief_host:
             print(BLUE, "Starting with chief host:", RESET, PURPLE, chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if chief_host != default_chief_host else "")
