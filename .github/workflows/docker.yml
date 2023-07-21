@@ -5,7 +5,9 @@ permissions:
 
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
+    - rubentest
 
 jobs:
   build:
@@ -14,6 +16,8 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
       - name: setup docker buildx
         uses: docker/setup-buildx-action@v2
         with:
@@ -28,4 +32,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/tintin10q/headless_placenl:latest
+          platforms: linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x,linux/386
+          tags: ghcr.io/RubenNL/headless_placenl:latest
