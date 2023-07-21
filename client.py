@@ -8,13 +8,13 @@ import json
 import datetime
 
 import images
+import reddit
 from colors import *
 from now import now
 from parse_order import parse_order, Order
 from config import Config, load_config
 
 R = RESET
-
 
 
 class Client:
@@ -38,12 +38,25 @@ class Client:
         self.current_order: Order | None = None
         self.differences = []
 
+        # self.next_place_time = reddit.place_pixel(self.config, (50, 50), 3)
+        self.next_place_time = 0
+        self.can_place = False
+
         # Set after hello has been sent
-        # self.id: str = None
-        # self.keepaliveTimeout: int = None
-        # self.keepaliveInterval: int = None
+        self.id: str | None = None
+        self.keepaliveTimeout: int | None = None
+        self.keepaliveInterval: int | None = None
 
     async def connect(self):
+        print(f"{now()} {GREEN}Checking reddit token...")
+
+        self.next_place_time = reddit.get_place_cooldown(self.config.auth_token)
+        self.can_place = self.next_place_time is not None
+
+        if not self.can_place:
+            print(f"{now()} {RED}This token can not place pixels! Just showing stats")
+            self.config.stats = True
+
         async with websockets.connect(self.uri) as websocket:
             # Send a sample 'brand' message to the server
             self.websocket = websocket
@@ -98,6 +111,18 @@ class Client:
     async def send_disable_capability(self, payload):
         print("disable capability")
 
+    async def send_enable_place_capability(self):
+        await self.send_message("enableCapability", "place")
+
+    async def send_enable_placeNOW_capability(self):
+        await self.send_message("enableCapability", "placeNow")
+
+    async def send_disable_placeNOW_capability(self):
+        await self.send_message("disableCapability", "placeNow")
+
+    async def send_enable_priorityMappings_capability(self):
+        await self.send_message("enableCapability", "priorityMappings")
+
     async def send_brand(self):
         # Handle the 'brand' message
         # Validate the brand information and send 'brandUpdated' or 'invalidPayload' error
@@ -138,6 +163,8 @@ class Client:
                 self.handle_stats(payload)
             case 'announcement':
                 self.handle_announcement(payload)
+            case 'enabledCapability':
+                self.handle_enableCapability(payload)
             case 'subscribed':
                 self.handle_subscribed(payload)
             case 'unsubscribed':
@@ -157,16 +184,16 @@ class Client:
         1. Set the brand
         2. Set capabilities
         3. Get the orders
-
+        4. Set the place capability
         """
         self.id = payload['id']
         self.keepaliveInterval = payload['keepaliveInterval']
         self.keepaliveTimeout = payload['keepaliveTimeout']
         print(f"{now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
-        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder())
+        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability())
 
-        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders(), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
+        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders() if self.can_place else asyncio.sleep(1), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
 
     async def handle_pong(self):
         await self.send_ping()
@@ -210,8 +237,9 @@ class Client:
         self.current_order = parse_order(payload)
         print(self.current_order)
 
-        self.differences = await images.get_pixel_differences(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
+        self.differences = await images.get_pixel_differences_with_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
         print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
+        await self.send_ping()
 
     @staticmethod
     def handle_announcement(payload):
@@ -253,9 +281,13 @@ class Client:
             case {"reason": str(reason), "message": str(message)}:
                 print(f"{now()}{RED}We are being disconnected shortly (Code={reason}).{R} {message}")
 
-    def set_differences(self):
-        canvas = download_image()
-        template = download_image(self.current_order.images.order)
+    def handle_enableCapability(self, payload):
+        printc(f"{now()} {GREEN}Enabled {AQUA}{payload}{GREEN} capability")
+        if payload == "placeNow":
+            self.send_disable_placeNOW_capability()
+
+    def handle_disabledCapability(self, payload):
+        printc(f"{now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
 
 
 def check_connected(self, method):

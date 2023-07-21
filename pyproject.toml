@@ -13,6 +13,7 @@ toml = "^0.10.2"
 Pillow = "^10.0.0"
 ojson = "^0.1.0"
 httpx = "^0.24.1"
+requests = "^2.31.0"
 
 
 [build-system]
