@@ -33,4 +33,4 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x,linux/386
-          tags: ghcr.io/RubenNL/headless_placenl:latest
+          tags: ghcr.io/rubennl/headless_placenl:latest
