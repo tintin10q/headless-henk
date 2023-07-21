@@ -4,12 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Moved example order from client to parse_order.py">
+    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Ignored the canvas image file now instead of the code file">
+      <change afterPath="$PROJECT_DIR$/images.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/paste.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/autoplace.py" beforeDir="false" afterPath="$PROJECT_DIR$/reddit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canvas.py" beforeDir="false" afterPath="$PROJECT_DIR$/canvas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parse_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" afterPath="$PROJECT_DIR$/poetry.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reddit.py" beforeDir="false" afterPath="$PROJECT_DIR$/reddit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +44,7 @@
     "V_FMT": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl",
+    "last_opened_file_path": "/home/qc/Projecten/place/headless_placenl/gaanmetdiebanaan.py",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -59,7 +65,7 @@
       <recent name="$PROJECT_DIR$/client" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.gaanmetdiebanaan">
     <configuration name="clientold2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="headless_placenl" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -82,6 +88,33 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="gaanmetdiebanaan" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="headless_placenl" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/.cache/pypoetry/virtualenvs/headless-placenl-1ZU0lnZ6-py3.10/bin/python" />
+      <option name="SDK_NAME" value="Poetry (headless_placenl)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/gaanmetdiebanaan.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.gaanmetdiebanaan" />
+      <item itemvalue="Python.clientold2" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.clientold2" />
@@ -97,7 +130,8 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="39574000" />
+      <workItem from="1689852615468" duration="55392000" />
+      <workItem from="1689929307526" duration="9536000" />
     </task>
     <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
       <option name="closed" value="true" />
@@ -235,7 +269,31 @@
       <option name="project" value="LOCAL" />
       <updated>1689905337761</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Added pillow dependency and renamed autoplace.py to reddit.py">
+      <option name="closed" value="true" />
+      <created>1689906366585</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1689906366585</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Added canvas fetching">
+      <option name="closed" value="true" />
+      <created>1689935785257</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1689935785257</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Ignored the canvas image file now instead of the code file">
+      <option name="closed" value="true" />
+      <created>1689935871015</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1689935871015</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -269,7 +327,10 @@
     <MESSAGE value="We can now deal with all messages which are not capabilities. Let's get the comparing of canvas going. Also redid config to allow for optional stats boolean config which turns on the stats message" />
     <MESSAGE value="added python version to README.md" />
     <MESSAGE value="Moved example order from client to parse_order.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Moved example order from client to parse_order.py" />
+    <MESSAGE value="Added pillow dependency and renamed autoplace.py to reddit.py" />
+    <MESSAGE value="Added canvas fetching" />
+    <MESSAGE value="Ignored the canvas image file now instead of the code file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ignored the canvas image file now instead of the code file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -279,10 +340,18 @@
           <line>7</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/client.py</url>
+          <line>168</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/headless_placenl$client.coverage" NAME="clientold2 Coverage Results" MODIFIED="1689856557501" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/headless_placenl$clientold2.coverage" NAME="clientold2 Coverage Results" MODIFIED="1689936690142" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/headless_placenl$client.coverage" NAME="client Coverage Results" MODIFIED="1689938241582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/headless_placenl$gaanmetdiebanaan.coverage" NAME="gaanmetdiebanaan Coverage Results" MODIFIED="1689938309765" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/headless_placenl$images.coverage" NAME="images Coverage Results" MODIFIED="1689936748417" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

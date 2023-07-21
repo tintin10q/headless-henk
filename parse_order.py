@@ -49,6 +49,7 @@ class Size:
             case _:
                 raise ValueError("Could not parse size object in order!")
 
+
 @dataclass
 class Offset:
     x: int
@@ -79,9 +80,9 @@ class Order:
         result = f"{PURPLE}--== Order ==--{RESET}\n" \
                  f"{GREEN}Created at: {AQUA}{self.createdAt}{RESET}\n" \
                  f"{f'{GREEN}Created by: {AQUA}{self.creator.name}{RESET}{ln}' if self.creator else ''}" \
-                 f"{f'{GREEN}Message: {AQUA}{self.message}{RESET}{ln}' if self.message else ''}"
+                 f"{f'{GREEN}Message: {AQUA}{self.message}{RESET}{ln}' if self.message else ''}" \
+                 f"{GREEN}Offset: x={AQUA}{self.offset.x}{GREEN}, y={AQUA}{self.offset.y}{RESET}"
         return result
-
 
 
 def parse_order(payload: dict) -> Order:
@@ -147,12 +148,11 @@ def parse_order(payload: dict) -> Order:
 
 
 example_order = {'createdAt': '2023-07-20T22:56:11.310Z',
-                         'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
-                                     'name': 'meinth'},
-                         'id': '16f67468-0625-4c0c-82f6-805cb6021820',
-                         'images': {'order': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820.png',
-                                    'priority': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820-priority.png'},
-                         'message': 'Mark Rutte heeft weer prioriteit',
-                         'offset': {'x': -500, 'y': -500},
-                         'size': {'height': 1000, 'width': 1000}}
-
+                 'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
+                             'name': 'meinth'},
+                 'id': '16f67468-0625-4c0c-82f6-805cb6021820',
+                 'images': {'order': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820.png',
+                            'priority': 'https://chief.placenl.nl/orders/16f67468-0625-4c0c-82f6-805cb6021820-priority.png'},
+                 'message': 'Mark Rutte heeft weer prioriteit',
+                 'offset': {'x': -500, 'y': -500},
+                 'size': {'height': 1000, 'width': 1000}}

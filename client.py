@@ -6,12 +6,14 @@ from pprint import pprint
 import json
 import datetime
 
+import images
 from colors import *
 from now import now
 from parse_order import parse_order, Order
 from config import Config, load_config
 
 R = RESET
+
 
 
 class Client:
@@ -33,6 +35,7 @@ class Client:
         self.websocket: websockets.legacy.client.WebSocketClientProtocol | None = None
         self.config: Config = config
         self.current_order: Order | None = None
+        self.differences = []
 
         # Set after hello has been sent
         # self.id: str = None
@@ -61,10 +64,12 @@ class Client:
                 payload = data.get("payload", None)
                 await self.handle_message(message_type, payload)
 
+
             except json.JSONDecodeError:
                 await self.log_error('invalidMessage', 'failedToParseJSON')
             except Exception as e:
-                print(f"Error processing message: {e}")
+                print(f"{now()} {RED}Error processing message: {e}")
+                pprint(message)
                 await self.log_error(str(type(e)), str(e))
 
     async def send_getCapabilities(self):
@@ -123,11 +128,12 @@ class Client:
             case 'ping':
                 await self.handle_pong()
             case 'hello':
+                print("OK GOING to handle hellow now")
                 await self.handle_hello(payload)
             case 'brandUpdated':
                 print(f"{now()} {GREEN}Brand has been updated successfully!{R}")
             case 'order':
-                self.handle_order(payload)
+                await self.handle_order(payload)
             case 'stats':
                 self.handle_stats(payload)
             case 'announcement':
@@ -158,11 +164,10 @@ class Client:
         self.keepaliveTimeout = payload['keepaliveTimeout']
         print(f"{now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
-        await self.send_brand()
-        await self.send_getOrder()
-        await self.send_getStats()
+        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder())
 
         await gather(self.subscribe_to_announcements(), self.subscribe_to_orders(), self.subscribe_to_stats() if self.config.stats else None)
+        print("HI")
 
     async def handle_pong(self):
         await self.send_ping()
@@ -201,10 +206,13 @@ class Client:
             case _:
                 raise ValueError("Invalid stats message from server")
 
-    def handle_order(self, payload):
-        print(f"{now()} {GREEN}Received order{R} 📧")
+    async def handle_order(self, payload):
+        print(f"{now()} {GREEN}Starting to handle order{R} 📧")
         self.current_order = parse_order(payload)
         print(self.current_order)
+
+        self.differences = await images.get_pixel_differences(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
+        print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
     @staticmethod
     def handle_announcement(payload):
@@ -245,6 +253,10 @@ class Client:
         match payload:
             case {"reason": str(reason), "message": str(message)}:
                 print(f"{now()}{RED}We are being disconnected shortly (Code={reason}).{R} {message}")
+
+    def set_differences(self):
+        canvas = download_image()
+        template = download_image(self.current_order.images.order)
 
 
 def check_connected(self, method):

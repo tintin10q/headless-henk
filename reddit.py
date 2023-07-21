@@ -5,11 +5,10 @@ from pprint import pprint
 from typing import Literal, List
 from urllib.parse import urlparse
 
+import httpx
 import ojson
 import ojson as json
 import websockets
-
-import requests
 
 from colors import GREEN, printc, RESET, RED, AQUA
 from config import load_config, Config
@@ -54,7 +53,7 @@ VALID_COLORS = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8'
                 '#E4ABFF', '#DE107F', '#FF3881', '#FF99AA', '#6D482F', '#9C6926', '#FFB470', '#000000', '#515252', '#898D90', '#D4D7D9', '#FFFFFF'];
 
 
-def send_request(config: Config, coords: Coordinates, color=3):
+async def place_pixel(config: Config, coords: Coordinates, color=3):
     print("got to the reqeust")
 
     data = f"""{{\"operationName\":\"setPixel\",\"variables\":{{\"input\":{{\"actionName\":\"r/replace:set_pixel\",\"PixelMessageData\":{{\"coordinate\":{{\"x\":{coords.x},\"y\":{coords.y}}},\"colorIndex\":{colorIndex},\"canvasIndex\":{coords.canvasIndex}}}}}}},\"query\":\"mutation setPixel($input: ActInput!) {{\\n  act(input: $input) {{\\n    data {{\\n      ... on BasicMessage {{\\n        id\\n        data {{\\n          ... on GetUserCooldownResponseMessageData {{\\n            nextAvailablePixelTimestamp\\n            __typename\\n          }}\\n          ... on SetPixelResponseMessageData {{\\n            timestamp\\n            __typename\\n          }}\\n          __typename\\n        }}\\n        __typename\\n      }}\\n      __typename\\n    }}\\n    __typename\\n  }}\\n}}\\n\"}}""",
@@ -71,8 +70,9 @@ def send_request(config: Config, coords: Coordinates, color=3):
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-site"
     }
-
-    set_pixel = requests.post(config.reddit_uri, data=data, headers=headers)
+    async with httpx.AsyncClient() as client:
+        # if this is broken we move back to requests
+        set_pixel = await client.post(config.reddit_uri_https, data=data, headers=headers)
     print("set pixel", set_pixel.status_code)
     print("set pixel response", set_pixel.text)
     # return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
