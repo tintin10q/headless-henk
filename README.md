@@ -34,7 +34,6 @@ This will start the client. It will probably stop the client right away and crea
 
 There is also a docker available at: [ghcr.io/tintin10q/headless-henk:latest](ghcr.io/tintin10q/headless-henk:latest). This docker supports every linux architecture you can imagine, so you can use your (old) Raspberry Pi as wel!
 
-<h2 style="color: red; font-size:15pt"> Werkt nog niet. De pixels moeten nog even alignen</h2>
 
 ## Using Pip
 
