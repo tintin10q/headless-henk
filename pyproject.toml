@@ -10,9 +10,9 @@ packages = [{include = "gaanmetdiebanaan.py"}, {include = "canvas.py"}]
 python = "^3.10"
 websockets = "^11.0.3"
 toml = "^0.10.2"
-requests = "^2.31.0"
 Pillow = "^10.0.0"
 ojson = "^0.1.0"
+httpx = "^0.24.1"
 
 
 [build-system]

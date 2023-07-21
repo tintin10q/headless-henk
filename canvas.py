@@ -1,18 +1,18 @@
 import asyncio
 from typing import List, Literal
 
-import requests
+import httpx
 from io import BytesIO
 from PIL import Image
 
 import reddit
 from colors import GREEN, AQUA, RESET
-from config import load_config
 
 
 async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5]):
     canvas_url = await reddit.get_canvas_url(canvas_id)
-    response = requests.get(canvas_url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(canvas_url)
     response.raise_for_status()
     return Image.open(BytesIO(response.content))
 
