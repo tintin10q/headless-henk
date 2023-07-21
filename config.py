@@ -30,7 +30,7 @@ class Config:
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
     version: str = '0.1.0'
-    name: str = 'Henk_py'
+    name: str = 'Headless-Henk'
     reddit_uri: str = default_reddit_uri
 
     def get_brand_payload(self) -> Brand:
