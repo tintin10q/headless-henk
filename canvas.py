@@ -81,18 +81,54 @@ def download_and_save_canvas():
 def xy_to_canvasIndex(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
     if x < 1000 and y < 1000: return 0
     if x < 1000 and y >= 1000: return 3
-
     if 1000 >= x < 2000 and y < 1000: return 1
-    if 2000 > x <= 1000 <= y: return 4
-
+    if 2000 > x <= 1000 and 1000 <= y: return 4
     if 2000 >= x and y < 1000: return 2
     if 2000 >= x and y >= 1000: return 5
 
 
-def colorTuple_to_colorIndex(colorTuple: Tuple[int,int,int,int]) -> int:
-    match colorTuple:
-        case _:
-            raise ValueError("Invalid Color!")
+from typing import Literal
+
+
+def xy_to_canvasIndex(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
+    if x < 1000 and y < 1000:
+        return 0
+    elif 1000 >= x < 2000 and y < 1000:
+        return 1
+    elif x >= 2000 and y < 1000:
+        return 2
+    if x < 1000 and y >= 1000:
+        return 3
+    elif 1000 >= x < 2000 and y >= 1000:
+        return 4
+    elif x >= 2000 and y >= 1000:
+        return 5
+
+
+def rgba_to_hex(rgba_tuple):
+    # Check if the input tuple has exactly 4 elements
+    if len(rgba_tuple) != 4:
+        raise ValueError("Input tuple must contain exactly 4 elements (RGBA).")
+
+    # Convert each component to a 2-digit hexadecimal representation
+    hex_components = [format(component, '02x') for component in rgba_tuple]
+
+    # Combine the hexadecimal components and add an alpha component if it's not fully opaque (alpha < 255)
+    if rgba_tuple[3] < 255:
+        hex_code = f"#{hex_components[0]}{hex_components[1]}{hex_components[2]}{hex_components[3]}"
+    else:
+        hex_code = f"#{hex_components[0]}{hex_components[1]}{hex_components[2]}"
+
+    return hex_code.upper()
+
+
+valid_color_codes = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8', '#00A368', '#00CC78', '#7EED56', '#00756F', '#009EAA', '#00CCC0', '#2450A4', '#3690EA', '#51E9F4', '#493AC1', '#6A5CFF', '#94B3FF', '#811E9F', '#B44AC0',
+                     '#E4ABFF', '#DE107F', '#FF3881', '#FF99AA', '#6D482F', '#9C6926', '#FFB470', '#000000', '#515252', '#898D90', '#D4D7D9', '#FFFFFF']
+
+
+def colorTuple_to_colorIndex(colorTuple: Tuple[int, int, int, int]) -> int:
+    hexcode = rgba_to_hex(colorTuple)
+    return valid_color_codes.index(hexcode)
 
 
 if __name__ == "__main__":
