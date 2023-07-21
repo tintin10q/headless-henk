@@ -1,15 +1,13 @@
-from pprint import pprint
-from typing import Literal
-
-from config import Config, load_config
 import websockets
+from typing import Literal
+from pprint import pprint
+import json
+import datetime
 
 from colors import *
-import json
-from dataclasses import dataclass
-
 from now import now
-from parse_order import parse_order
+from parse_order import parse_order, Order
+from config import Config, load_config
 
 R = RESET
 
@@ -30,8 +28,9 @@ class Client:
         uri = f"wss://{config.chief_host}/ws"  # Replace with your server's WebSocket endpoint
         self.chief_host = config.chief_host
         self.uri = uri
-        self.websocket: websockets.legacy.client.WebSocketClientProtocol = None
+        self.websocket: websockets.legacy.client.WebSocketClientProtocol | None = None
         self.config: Config = config
+        self.current_order: Order | None = None
 
         # Set after hello has been sent
         # self.id: str = None
@@ -102,9 +101,9 @@ class Client:
 
         if payload is not None:
             message['payload'] = payload
-            print(YELLOW, "added payload", R)
+            print(now(), YELLOW, f"Added payload to {BLUE}{message_type}{BLUE} message", R)
 
-        print(YELLOW + f"{now()} {GREEN}Sending {GREEN}{message_type}{R} message:" + STOP, message, PURPLE, end=RESET)
+        print(YELLOW + f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} with payload:{R}" + STOP, message, PURPLE, end=RESET)
         pprint(payload)
         await self.websocket.send(json.dumps(message))
         printc(GREEN + f"{now()} {GREEN}Sent message: {R}{message}")
@@ -117,14 +116,15 @@ class Client:
         # await self.websocket.send(json.dumps(error_message))
 
     async def handle_message(self, message_type: str, payload: dict | None):
-        print(BLUE + f"{now()} {BLUE}Received: {R}{GREEN}{message_type}{BLUE} with: {R}{PURPLE}{payload}{R}")
+        # Todo remove with : {payload}
+        print(BLUE + f"{now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
         match message_type:
             case 'ping':
                 await self.handle_pong()
             case 'hello':
                 await self.handle_hello(payload)
             case 'brandUpdated':
-                printc(GREEN, "Brand has been updated successfully!")
+                printc(now(), GREEN, "Brand has been updated successfully!")
             case 'order':
                 self.handle_order(payload)
             case 'stats':
@@ -149,6 +149,7 @@ class Client:
         self.id = payload['id']
         self.keepaliveInterval = payload['keepaliveInterval']
         self.keepaliveTimeout = payload['keepaliveTimeout']
+        print(f"{GREEN}Client id: {AQUA}{self.id}")
 
         await self.send_brand()
         await self.send_getOrder()
@@ -162,20 +163,41 @@ class Client:
 
     def handle_stats(self, payload: dict):
         match payload:
-            case {"activeConnections": int(activeConnections), "messageIn": int(messageIn), "messagesOut": int(messageOut)}:
-                print(f"""{AQUA_BG + LIGHTAQUA}--== Stats ==--
-{GREEN}Active Connections: {PURPLE} {activeConnections}
-{GREEN}Incoming  messages: {PURPLE} {messageIn}
-{GREEN}Outgoing  messages: {PURPLE} {messageOut}{RESET}
+
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn), "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections),
+                  "capabilities": {'place': int(place), 'placeNow': int(placenow), 'priorityMappings': int(priorityMappings)}}:
+                dt_object = datetime.datetime.fromtimestamp(date / 1000)
+                nice_date = dt_object.strftime('%Y %b %d %H:%M:%S')
+                print(f"""{PURPLE}--== Server Stats ==--
+{GREEN}Time: {AQUA}{nice_date}{RESET}
+{GREEN}Incoming  messages: {AQUA}{messageIn}
+{GREEN}Outgoing  messages: {AQUA}{messageOut}{RESET}
+{GREEN}Socket Connections: {AQUA}{socketConnections}
+{GREEN}Active Connections: {AQUA}{activeConnections}
+{PURPLE}--== Capability Stats ==--
+{GREEN}Able to place: {AQUA}{place}/{activeConnections}{RESET}
+{GREEN}Able to place now: {AQUA}{placenow}/{activeConnections}{RESET}
+{GREEN}Understands priority mappings: {AQUA}{priorityMappings}/{activeConnections}{RESET}
+                """)
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn), "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections)}:
+                dt_object = datetime.datetime.fromtimestamp(date / 1000)
+                nice_date = dt_object.strftime('%Y-%d %H:%M:%S')
+                print(f"""{PURPLE}--== Stats ==--
+{GREEN}Active Connections: {AQUA}{activeConnections}
+{GREEN}Socket Connections: {AQUA}{socketConnections}
+{GREEN}Incoming  messages: {AQUA}{messageIn}
+{GREEN}Outgoing  messages: {AQUA}{messageOut}{RESET}
+{GREEN}Date: {AQUA}{RESET}
 """)
             case _:
                 raise ValueError("Invalid stats message from server")
 
     def handle_order(self, payload):
-        print(now(), GREEN + "Received order 📧", end=R)
-        order = parse_order(payload)
-        print(order)
-        example = {'createdAt': '2023-07-20T22:56:11.310Z',
+        print(f"{now()} {GREEN}Received order{R} 📧")
+        self.current_order = parse_order(payload)
+        print(self.current_order)
+
+        example_order = {'createdAt': '2023-07-20T22:56:11.310Z',
                    'creator': {'avatar': 'https://cdn.discordapp.com/avatars/320130072767889409/7b3140beca82327722fb9235b5af9b14.png',
                                'name': 'meinth'},
                    'id': '16f67468-0625-4c0c-82f6-805cb6021820',
@@ -188,7 +210,7 @@ class Client:
     def handle_announcement(self, payload):
         match payload:
             case {"message": str(message), "important": important}:
-                print(f"\n{LIGHTAQUA}{AQUA_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
+                print(f"\n{LIGHTPURPLE}{PURPLE_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
                       f"\n{now()} {message}\n")
             case _:
                 print(now(), "Got announcement but couldn't parse it...🤔")

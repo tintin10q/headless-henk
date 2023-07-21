@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Updating poetry files">
-      <change afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
+    <list default="true" id="e92222aa-6021-476c-ae79-ea26ec9c7068" name="Changes" comment="Updated workspace I guess">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gaanmetdiebanaan.py" beforeDir="false" afterPath="$PROJECT_DIR$/gaanmetdiebanaan.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/req.js" beforeDir="false" afterPath="$PROJECT_DIR$/now.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parse_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/parse_order.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1689847610772</updated>
       <workItem from="1689847611776" duration="2296000" />
-      <workItem from="1689852615468" duration="31031000" />
+      <workItem from="1689852615468" duration="36544000" />
     </task>
     <task id="LOCAL-00001" summary="better config loading, only loading once and showing the uri and also warning if it is not the default one. Use load_config to get it">
       <option name="closed" value="true" />
@@ -132,7 +131,47 @@
       <option name="project" value="LOCAL" />
       <updated>1689881834306</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Renamed bot to Henk_py and made my name prettier">
+      <option name="closed" value="true" />
+      <created>1689898418415</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1689898418415</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Added function to print current time nicely">
+      <option name="closed" value="true" />
+      <created>1689898449653</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1689898449653</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Added function to parse an order coming in from the server into dataclasses">
+      <option name="closed" value="true" />
+      <created>1689898464069</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1689898464069</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Added announcement handler, removed client sending errors - only the server can send errors, added order parsing and non functional stats handler">
+      <option name="closed" value="true" />
+      <created>1689898520613</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1689898520613</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Updated workspace I guess">
+      <option name="closed" value="true" />
+      <created>1689898530044</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1689898530044</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,7 +194,12 @@
     <MESSAGE value="Code to place" />
     <MESSAGE value="Client is now using the config" />
     <MESSAGE value="Updating poetry files" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updating poetry files" />
+    <MESSAGE value="Renamed bot to Henk_py and made my name prettier" />
+    <MESSAGE value="Added function to print current time nicely" />
+    <MESSAGE value="Added function to parse an order coming in from the server into dataclasses" />
+    <MESSAGE value="Added announcement handler, removed client sending errors - only the server can send errors, added order parsing and non functional stats handler" />
+    <MESSAGE value="Updated workspace I guess" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated workspace I guess" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
