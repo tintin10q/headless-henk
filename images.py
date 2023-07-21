@@ -8,7 +8,7 @@ from PIL import Image
 from colors import printc, GREEN, RESET, BLUE
 from now import now
 from parse_order import Order
-from canvas import build_canvas_image
+from canvas import build_canvas_image, colorTuple_to_colorIndex
 
 
 async def download_image(url):
@@ -27,7 +27,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
     """
     canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes), download_image(order.images.order))
 
-    # we don't need to save this but its nice
+    # we don't need to save this, but it's nice
     chief_template.save("chieftemplate.png")
 
     width, height = order.size.width, order.size.height
@@ -40,6 +40,37 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
     for x in range(width):
         for y in range(height):
             template_pixel = chief_template.getpixel((x, y))
+            match template_pixel:
+                case (0, 0, 0, 0):
+                    continue
+            canvas_pixel = canvas.getpixel((x + offsetX, y + offsetY))
+
+            if canvas_pixel != template_pixel:
+                diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))
+
+    return diff_pixels
+
+
+async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image):
+    """
+    Only download the canvas and supply the order as an input
+    :param order_image:
+    :param order:
+    :param canvas_indexes: Put None on the missing indexes, so to fetch 1 and 4 you do [None, 1, None, None, 4, None]
+    :return:
+    """
+    canvas = await build_canvas_image(canvas_indexes)
+
+    width, height = order.size.width, order.size.height
+
+    offsetX = 1000
+    offsetY = 500
+
+    diff_pixels = []
+
+    for x in range(width):
+        for y in range(height):
+            template_pixel = order_image.getpixel((x, y))
             match template_pixel:
                 case (0, 0, 0, 0):
                     continue
@@ -76,5 +107,7 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
 
             if canvas_pixel != template_pixel:
                 diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))
+
+            print(colorTuple_to_colorIndex(canvas_pixel))
 
     return diff_pixels

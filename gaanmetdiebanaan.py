@@ -9,7 +9,7 @@ from now import now
 from reddit import Coordinates
 
 
-async def main():
+async def metdiebanaan():
     config = load_config()
     # make client
     client = Client(config)
@@ -29,11 +29,7 @@ async def main():
 
 
 def gaan():
-    # config = load_config()
-    # coords = Coordinates(3, 600, 1)
-    # reddit.place_pixel(config, coords, 3)
-
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(metdiebanaan())
 
 
 if __name__ == '__main__':

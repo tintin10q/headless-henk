@@ -55,7 +55,7 @@ VALID_COLORS = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8'
 
 
 def place_pixel(config: Config, coords: Coordinates, color=3):
-    print("got to the place pixel reqeust", coords)
+    # print("got to the place pixel reqeust", coords)
 
     data = {
         'operationName': 'setPixel',
@@ -85,8 +85,7 @@ def place_pixel(config: Config, coords: Coordinates, color=3):
 
     print(config.reddit_uri_https)
     set_pixel = requests.post(config.reddit_uri_https, json=data, headers=headers)
-    print("hi")
-    print("set pixel", set_pixel.status_code)
+    print(f"{now()} {GREEN}setPixel response: {AQUA if set_pixel.status_code < 300 else RED}{set_pixel.status_code}{GREEN} (should be 200)")
     print("set pixel response", set_pixel.text)
 
 
@@ -219,7 +218,7 @@ def get_place_cooldown(authorization: str) -> int | None:
     next_time = get_nextAvailablePixelTimestamp(authorization)
     if next_time is None:
         return None
-    diff = next_time - time.time() / 1000
+    diff = next_time - time.time()
     return int(max((diff, 0)))
 
 
@@ -271,7 +270,7 @@ mutation GetPersonalizedTimer{
 
     ts = data['data']['act']['data'][0]['data']['nextAvailablePixelTimestamp']
 
-    return 0 if not ts else ts
+    return 0 if not ts else ts / 1000
 
 
 async def get_new_anon_session() -> dict:

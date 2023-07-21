@@ -14,7 +14,7 @@ import images
 import reddit
 from colors import *
 from now import now
-from parse_order import parse_order, Order
+from parse_order import parse_order, Order, Image
 from config import Config, load_config
 
 R = RESET
@@ -52,6 +52,8 @@ class Client:
         self.place_timer: threading.Timer | None = None
         self.pong_timer: threading.Timer | None = None
 
+        self.order_image: Image | None
+
     async def connect(self):
         printc(f"{now()} {GREEN}Checking reddit token...")
 
@@ -59,11 +61,8 @@ class Client:
         self.can_place = self.place_cooldown is not None  # If this is none the token is not valid
 
         if not self.can_place:
-            printc(f"{now()} {RED}This token can not place pixels!")
+            printc(f"{now()} {RED}This reddit jwt token can not place pixels!")
             exit(0)
-
-        self.place_timer = threading.Timer(self.place_cooldown + 10, self.place_pixel)
-        self.place_timer.start()
 
         async with websockets.connect(self.uri) as websocket:
             # Send a sample 'brand' message to the server
@@ -76,16 +75,21 @@ class Client:
     def place_pixel(self):
         """ Actually place a pixel hype"""
         delay = 10
+
+        loop = asyncio.get_event_loop()
+
+        self.differences = loop.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+
         if not self.id:
             self.place_timer = threading.Timer(delay, self.place_pixel)
             self.place_timer.start()
             return  # Silent return if we do not have an id yet
 
         if not self.differences:
-            print(f"{now()} {LIGHTGREEN}No pixels have to be placed!{R}")
+            print(f"{now()} {LIGHTGREEN}No pixels have to be placed 🥳{R}")
 
             self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
-            print(f"{now()} {LIGHTGREEN}Try to place pixels again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
+            print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
 
             self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
             self.place_timer.start()
@@ -98,12 +102,30 @@ class Client:
         x, y = difference[0], difference[1]
         canvasIndex = canvas.xy_to_canvasIndex(x, y)
 
-        print("Placing difference", difference)
+        if canvasIndex is None:
+            printc(RED, f"Canvas index is None!!!, x={x}, y={y}")
+            return
 
+        x = x % 1000
+        y = y % 1000
+
+
+        print("canvasIndex", canvasIndex)
+        coords = reddit.Coordinates(x, y, canvasIndex)
+
+        colorTuple = difference[2]
+        colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
+
+        print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x}{GREEN}, y={AQUA}{y}{GREEN} on canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+
+        reddit.place_pixel(self.config, coords, colorIndex)
+
+        # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+        print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
 
         self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
-        print(f"{now()} {LIGHTGREEN}Playing next pixel in {AQUA}{self.place_cooldown + delay / 60:2.2f}{LIGHTGREEN} minutes!{R}")
+        print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + delay / 60:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
     async def receive_messages(self):
@@ -300,11 +322,27 @@ class Client:
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
         self.pong_timer.start()
 
-        self.differences = await images.get_pixel_differences_with_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes)
+        # Stop the place timer if we had one
+        if self.place_timer and not self.place_timer.finished:
+            print(f"{now()} {GREEN}Stopped place timer while processing new order")
+            self.place_timer.cancel()
+
+
+        # handle the order
+        self.order_image = await images.download_image(self.current_order.images.order)
 
         print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
+        self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+
+        # Stop the pong timer
         self.pong_timer.cancel()
+
+        # Start the place timer
+        self.place_timer = threading.Timer(self.place_cooldown + 10, self.place_pixel)
+        self.place_timer.start()
+
+        print(f"{now()} {GREEN}Started place timer again")
 
     @staticmethod
     def handle_announcement(payload):
@@ -344,7 +382,7 @@ class Client:
     def handle_disconnect(self, payload: dict):
         match payload:
             case {"reason": str(reason), "message": str(message)}:
-                print(f"{now()}{RED}We are being disconnected shortly (Code={reason}).{R} {message}")
+                print(f"{now()}{RED}We are being disconnected shortly {AQUA}(Code={reason}){RED}.{R} {message}")
                 if reason == "timedOut":
                     raise TimeoutError(message)
 
