@@ -17,7 +17,7 @@ async def metdiebanaan():
     while True:
         try:
             await client.connect()
-        except TimeoutError:
+        except (TimeoutError, asyncio.exceptions.TimeoutError):
             print(f"{now()} We got disconnected. Lets try connect again in 4 seconds")
             if client.place_timer:
                 client.place_timer.cancel()

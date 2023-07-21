@@ -331,7 +331,7 @@ class Client:
         # handle the order
         self.order_image = await images.download_image(self.current_order.images.order)
 
-        print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
+        # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
 
