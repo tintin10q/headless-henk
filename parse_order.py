@@ -156,6 +156,3 @@ example_order = {'createdAt': '2023-07-20T22:56:11.310Z',
                          'offset': {'x': -500, 'y': -500},
                          'size': {'height': 1000, 'width': 1000}}
 
-
-def download_order_image():
-   ...

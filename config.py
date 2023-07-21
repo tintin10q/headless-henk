@@ -1,8 +1,8 @@
 import toml
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import TypedDict, List, Literal
 
-from colors import RED, RESET, BLUE, PURPLE, YELLOW
+from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN
 
 import os
 
@@ -20,18 +20,23 @@ class Brand(TypedDict):
     name: str
 
 
-default_reddit_uri = 'https://gql-realtime-2.reddit.com/query'
 default_chief_host = 'chief.placenl.nl'
+
+default_reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
+default_reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
 
 
 @dataclass
 class Config:
     auth_token: str
+    # image_ids (list): A list of canvas IDs representing the available parts. Use None for missing parts.
+    canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
     version: str = '0.1.0'
     name: str = 'Headless-Henk'
-    reddit_uri: str = default_reddit_uri
+    reddit_uri_https: str = default_reddit_uri_https
+    reddit_uri_wss: str = default_reddit_uri_wss
     stats: bool = False
 
     def get_brand_payload(self) -> Brand:
@@ -47,7 +52,7 @@ class Config:
 __config = None
 
 
-def load_config() -> Config:
+def load_config(ignore_missing_auth: bool = False) -> Config:
     global __config
 
     if __config is not None:
@@ -57,17 +62,21 @@ def load_config() -> Config:
         config_dict = toml.load(config_file)
 
         chief_host = config_dict.get("chief_host", default_chief_host)
-        reddit_uri = config_dict.get("reddit_uri", default_reddit_uri)
+        reddit_uri_https = config_dict.get("reddit_uri_https", default_reddit_uri_https)
+        reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
         auth_token = config_dict.get("auth_token", None)
         stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
+        canvas_ids = config_dict.get("canvas_indexes", [None, 1, None, None, 4, None, None])  # The canvas ids to watch
 
-        if auth_token and reddit_uri and chief_host:
+        if (ignore_missing_auth or auth_token) and reddit_uri_wss and reddit_uri_https and chief_host:
             print(BLUE, "Starting with chief host:", RESET, PURPLE, chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if chief_host != default_chief_host else "")
-            print(BLUE, "Starting with reddit api host:", RESET, PURPLE, reddit_uri, RESET, YELLOW + "Custom reddit host be careful" + RESET if reddit_uri != default_reddit_uri else "")
-            if not auth_token.startswith("Bearer "):
+            print(BLUE, "Starting with reddit api host:", RESET + PURPLE + reddit_uri_https, BLUE + "and", PURPLE + reddit_uri_wss, RESET,
+                  YELLOW + "Custom reddit host be careful" + RESET if reddit_uri_https != reddit_uri_https or reddit_uri_wss != default_reddit_uri_wss else "")
+
+            if not ignore_missing_auth and not auth_token.startswith("Bearer "):
                 print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
                 exit(1)
-            __config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri=reddit_uri)
+            __config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_ids)
             return __config
         else:
             print(RED, "Missing auth_token ")

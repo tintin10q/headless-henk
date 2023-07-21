@@ -23,6 +23,14 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "ojson"
+version = "0.1.0"
+description = "Keep your JSON structure as it is"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "Pillow"
 version = "10.0.0"
 description = "Python Imaging Library (Fork)"
@@ -85,7 +93,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "279a01e885022085edd785557815cd2f54ea7647cef60543ffa8f7babca790a2"
+content-hash = "b009db41676c6a51480e62679f1cef4bd030172bba774c8f8e549ad571185914"
 
 [metadata.files]
 certifi = [
@@ -172,6 +180,9 @@ charset-normalizer = [
 idna = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
     {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
+]
+ojson = [
+    {file = "ojson-0.1.0.tar.gz", hash = "sha256:94a1c628c0b4447680d9039c110dafe4efd6e3fdf77602b3ff543c2a278b7ec5"},
 ]
 Pillow = [
     {file = "Pillow-10.0.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:1f62406a884ae75fb2f818694469519fb685cc7eaff05d3451a9ebe55c646891"},

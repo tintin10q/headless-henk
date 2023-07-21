@@ -15,7 +15,6 @@ If you have problems with poetry just delete `poetry.lock` and try again.
 
 This will start the client. It will probably stop the client right away and create a [config.toml](config.toml) file. You have to insert your reddit jwt into this config file under `auth_token` field. 
 
-
 ## How to get reddit jwt?
 
 1. Go to r/place
@@ -29,8 +28,25 @@ This will start the client. It will probably stop the client right away and crea
 8. Find the Authorization header
 9. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
 
+> Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is also because I don't know how reddit refreshes their tokens. Let me know if you konw. 
+
 **Be sure to not share this jwt with others!**
 
 There is also a docker available at: [https://github.com/tintin10q/headless-henk/pkgs/container/headless_placenl](https://github.com/tintin10q/headless-henk/pkgs/container/headless_placenl)
 
 <h2 style="color: red; font-size:15pt"> Werkt nog niet. Maar kan wel de brand updaten :)</h2>
+
+# Downloading the Canvas
+
+As a bonus feature you can run 
+```bash
+poetry run downloadcanvas
+``` 
+
+to download the canvas. You don't have to put your auth token in `config.toml` for this to work. 
+
+<br>
+<br>
+<br>
+
+[Disclaimer](./disclaimer.md)

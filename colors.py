@@ -227,7 +227,7 @@ STOP_CROSSOUT = STOP_STIKE
 REVEAL = STOP_HIDE
 
 
-def printc(*args, STOPPER=STOP, **kwargs, ):
+def printc(*args: object, STOPPER: object = STOP, **kwargs: object, ) -> object:
     """Automatically puts a color stop sign at the end of the print """
     print(*args, **kwargs, end=STOPPER + '\n')
 
