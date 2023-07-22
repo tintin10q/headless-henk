@@ -35,9 +35,9 @@ Instead of having `reddit_username` and `reddit_password` you can also have:
 auth_token = "INSERT TOKEN HERE"
 ```
 
-But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace it every 24 hours.
+But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace it every 24 hours. Whenever you replace the token it will work for another 24 hours.
 
-See the `How to get a reddit jwt token` section for information on how to get a reddit jwt token. 
+See the [How to get a reddit jwt token](https://github.com/tintin10q/headless-henk#how-to-get-reddit-jwt) section for information on how to get a reddit jwt token. 
 
 > Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
 > of numbers and null.
