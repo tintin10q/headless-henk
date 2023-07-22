@@ -55,7 +55,6 @@ class Client:
         self.place_timer: threading.Timer | None = None
         self.pong_timer: threading.Timer | None = None
 
-        self.order_image: Image | None = None
         self.priority_image: Image | None = None
         self.order_image: Image | None = None
 
