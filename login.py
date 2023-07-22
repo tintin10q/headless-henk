@@ -84,7 +84,7 @@ def cli():
 
     print(token, file=sys.stderr)
 
-    if input(f"Do you want to add this token to {config.configfilepath} (y/n)").lower() in ('y',):
+    if input(f"Do you want to add this token to {config.configfilepath} (y/n):").lower() in ('y',):
         if not os.path.exists(config.configfilepath):
             config.create_default_config(config.configfilepath)
 
@@ -92,8 +92,10 @@ def cli():
             configdata = toml.load(config_file)
 
         configdata['auth_token'] = token
-        del configdata['reddit_username']
-        del configdata['reddit_password']
+        if 'reddit_username' in configdata:
+            del configdata['reddit_username']
+        if 'reddit_password' in configdata:
+            del configdata['reddit_password']
 
         with open(config.configfilepath, 'w') as config_file:
             toml.dump(configdata, config_file)
