@@ -65,7 +65,6 @@ Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 Here is a bash script which sets default env vars
 
 ```bash
-export PLACENL_USE_ENV="yes"
 export PLACENL_AUTH_TOKEN="ADD TOKEN HERE" 
 export PLACENL_CHIEF_HOST="chief.placenl.nl"
 export PLACENL_REDDIT_URI_HTTPS="https://gql-realtime-2.reddit.com/query"
