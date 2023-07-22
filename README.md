@@ -4,7 +4,8 @@ A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python
 
 ## How to get reddit jwt?
 
-The easiest way is to just run `login.py` to get a token. 
+The easiest way is to just run `login.py` to get a token. This will also automatically add the token to the config.toml. 
+You can also run `login.py` by doing `poetry run login`
 
 You can also go to the website:
 

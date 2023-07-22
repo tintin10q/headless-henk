@@ -1,9 +1,13 @@
+import argparse
 import getpass
+import os.path
 import sys
 
 import requests
 import time
 import json
+
+import toml
 from bs4 import BeautifulSoup
 
 from colors import RED, GREEN, printc
@@ -26,7 +30,8 @@ INITIAL_HEADERS = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 }
 
-def get_reddit_token(username: str, password: str) -> str:
+
+def get_reddit_token(username: str, password: str) -> str | None:
     s = requests.session()
     s.headers.update(INITIAL_HEADERS)
 
@@ -34,24 +39,24 @@ def get_reddit_token(username: str, password: str) -> str:
     time.sleep(0.5)
 
     # Get csrf token from login page
-    print("Getting CSRF token...")
+    printc(f"{now()} {GREEN}Getting CSRF token...")
     r = s.get(LOGIN_URL)
     soup = BeautifulSoup(r.content, "html.parser")
     csrf_token = soup.find("input", {"name": "csrf_token"})["value"]
     time.sleep(0.5)
 
     # Login
-    print("Logging in...")
+    printc(f"{now()} {GREEN}Logging in...")
     r = s.post(LOGIN_URL, data={
-                "username": username,
-                "password": password,
-                "dest": REDDIT_URL,
-                "csrf_token": csrf_token
-            })
+        "username": username,
+        "password": password,
+        "dest": REDDIT_URL,
+        "csrf_token": csrf_token
+    })
     time.sleep(0.5)
     if r.status_code != 200:
         printc(f"{now()} {RED}Login failed! Most likely you've entered an invalid password.")
-        return
+        return None
     else:
         printc(f"{now()} {GREEN}Login successful!")
 
@@ -65,8 +70,32 @@ def get_reddit_token(username: str, password: str) -> str:
 
     return token
 
-if __name__ == '__main__':
+
+import config
+
+
+def cli():
     username = input("usename:")
     password = getpass.getpass('password:')
-    print(get_reddit_token(username, password), file=sys.stderr)
+    token = get_reddit_token(username, password)
+    if not token:
+        return
 
+    print(token, file=sys.stderr)
+
+    if input(f"Do you want to add this token to {config.configfilepath} (y/n)").lower() in ('y',):
+        if not os.path.exists(config.configfilepath):
+            config.create_default_config(config.configfilepath)
+
+        with open(config.configfilepath, 'r') as config_file:
+            configdata = toml.load(config_file)
+
+        configdata['auth_token'] = token
+
+        with open(config.configfilepath, 'w') as config_file:
+                toml.dump(configdata, config_file)
+        print(f"{now()} Token added to config file!")
+
+
+if __name__ == '__main__':
+    cli()

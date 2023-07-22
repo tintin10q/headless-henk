@@ -125,6 +125,13 @@ def load_config_from_env() -> Config:
     config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
+def create_default_config(filename: configfilepath):
+    with open(filename, 'w+') as config_file:
+        starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
+                          'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
+        toml.dump(starter_config, config_file)
+        print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
+
 
 def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     # First try to read from env vars
@@ -132,11 +139,8 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     if not os.path.exists(filename):
         print(PURPLE + configfilepath, RESET + RED + f"file not found!", RESET)
         print(YELLOW + f"Attempting to create {filename} with a default config.{RESET}")
-        with open(configfilepath, 'w+') as config_file:
-            starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
-                              'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
-            toml.dump(starter_config, config_file)
-            print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
+        create_default_config(filename)
+
         exit(0)
 
     # If that did not work look for the config file

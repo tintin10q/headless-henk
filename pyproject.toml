@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A headless placenl bot for 2023"
 authors = ["Quinten Cabo <tintin10q@hotmail.com>"]
 readme = "README.md"
-packages = [{include = "gaanmetdiebanaan.py"}, {include = "canvas.py"}]
+packages = [{include = "gaanmetdiebanaan.py"}, {include = "canvas.py"}, {include = "login.py"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -24,3 +24,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 gaanmetdiebanaan = 'gaanmetdiebanaan:gaan'
 downloadcanvas = 'canvas:download_and_save_canvas'
+login = 'login:cli'
