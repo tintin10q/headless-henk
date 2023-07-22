@@ -49,7 +49,7 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '1.1.0'
+    version: str = '1.2.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
