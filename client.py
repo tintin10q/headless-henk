@@ -92,7 +92,19 @@ class Client:
 
         loop2 = asyncio.new_event_loop()
 
-        self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+        try:
+            self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+        except (asyncio.CancelledError, asyncio.TimeoutError):
+            print(f"{now()} {YELLOW}Timed while getting differences trying one more time!")
+            try:
+                self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                print(f"{now()} {YELLOW}Timed out while differences again! Giving up!")
+                self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
+                print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
+                self.place_timer.start()
+                return
+
         print(f"{now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
         if self.place_timer:
