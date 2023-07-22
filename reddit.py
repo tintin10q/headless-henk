@@ -210,7 +210,7 @@ class LiveCanvas:
                 print("GOT:", message)
 
 
-def get_place_cooldown(authorization: str) -> int | None:
+def get_place_cooldown(authorization: str) -> int:
     """
     If this is 0 there is no cooldown
     :param authorization:
@@ -218,9 +218,9 @@ def get_place_cooldown(authorization: str) -> int | None:
     """
     next_time = get_nextAvailablePixelTimestamp(authorization)
     if next_time is None:
-        return None
+        return 1  # 1 second just in case
     diff = next_time - time.time()
-    return int(max((diff, 0)))
+    return int(max((diff, 1)))
 
 
 def get_nextAvailablePixelTimestamp(authorization: str) -> int | None:
@@ -277,10 +277,10 @@ mutation GetPersonalizedTimer{
 def get_new_anon_session() -> dict:
     printc(f"{now()} {GREEN}Fetching new anon access token from {RED}reddit{GREEN}, this may take a bit")
     response = requests.get('https://reddit.com/r/place',
-                                    headers={
-                                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/116.0'
-                                    })
+                            headers={
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/116.0'
+                            })
     body = response.text
 
     # todo: yuck
@@ -361,6 +361,3 @@ def get_anon_authorization() -> str:
         except IndexError:
             print(f"{now()} Could not access token from reddit (IndexError), trying again...")
             time.sleep(1)
-
-
-

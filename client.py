@@ -353,6 +353,10 @@ class Client:
         # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+
+        if self.place_cooldown is None:
+            self.place_cooldown = 9
+
         printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + 1}{RESET} {GREEN}seconds")
 
         # Stop the pong timer
