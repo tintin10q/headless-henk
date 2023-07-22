@@ -82,6 +82,9 @@ class Client:
         self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
         print(f"{now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
+        if self.place_timer:
+            self.place_timer.cancel() # just in case
+
         if not self.id:
             self.place_timer = threading.Timer(delay, self.place_pixel)
             self.place_timer.start()
