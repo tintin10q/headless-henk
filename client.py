@@ -74,12 +74,13 @@ class Client:
 
     def place_pixel(self):
         """ Actually place a pixel hype"""
-        printc(f"{now()}{GREEN}Starting to place pixel!{RESET}")
+        printc(f"{now()} {AQUA}== Starting to place pixel =={RESET}")
         delay = 1
 
         loop2 = asyncio.new_event_loop()
 
         self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+        print(f"{now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
         if not self.id:
             self.place_timer = threading.Timer(delay, self.place_pixel)
@@ -121,7 +122,6 @@ class Client:
         loop2.run_until_complete(self.send_enable_placeNOW_capability())
         reddit.place_pixel(self.config, coords, colorIndex)
         loop2.run_until_complete(self.send_disable_placeNOW_capability())
-
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
@@ -333,7 +333,7 @@ class Client:
             self.place_timer.cancel()
 
         # handle the order
-        self.order_image = await images.download_image(self.current_order.images.order)
+        self.order_image = await images.download_order_image(self.current_order.images.order)
 
         # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 

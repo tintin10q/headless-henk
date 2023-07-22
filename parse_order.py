@@ -81,7 +81,8 @@ class Order:
                  f"{GREEN}Created at: {AQUA}{self.createdAt}{RESET}\n" \
                  f"{f'{GREEN}Created by: {AQUA}{self.creator.name}{RESET}{ln}' if self.creator else ''}" \
                  f"{f'{GREEN}Message: {AQUA}{self.message}{RESET}{ln}' if self.message else ''}" \
-                 f"{GREEN}Offset: x={AQUA}{self.offset.x}{GREEN}, y={AQUA}{self.offset.y}{RESET}"
+                 f"{GREEN}Offset: x={AQUA}{self.offset.x}{GREEN}, y={AQUA}{self.offset.y}{RESET}\n" \
+                 f"{GREEN}Size: width={AQUA}{self.size.width}{GREEN}, height={AQUA}{self.size.height}{RESET}\n"
         return result
 
 
