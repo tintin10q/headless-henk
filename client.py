@@ -103,7 +103,7 @@ class Client:
         canvasIndex = canvas.xy_to_canvasIndex(x, y)
 
         if canvasIndex is None:
-            printc(RED, f"Canvas index is None!!!, x={x}, y={y}")
+            printc(RED, f"{now()}Canvas index is None!!!, x={x}, y={y}")
             return
 
         x = x % 1000
@@ -236,7 +236,9 @@ class Client:
             case 'announcement':
                 self.handle_announcement(payload)
             case 'enabledCapability':
-                self.handle_enableCapability(payload)
+                await self.handle_enableCapability(payload)
+            case 'disabledCapability':
+                self.handle_disabledCapability(payload)
             case 'subscribed':
                 self.handle_subscribed(payload)
             case 'unsubscribed':
@@ -386,10 +388,10 @@ class Client:
                 if reason == "timedOut":
                     raise TimeoutError(message)
 
-    def handle_enableCapability(self, payload):
+    async def handle_enableCapability(self, payload):
         printc(f"{now()} {GREEN}Enabled {AQUA}{payload}{GREEN} capability")
         if payload == "placeNow":
-            self.send_disable_placeNOW_capability()
+            await self.send_disable_placeNOW_capability()
 
     def handle_disabledCapability(self, payload):
         printc(f"{now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
