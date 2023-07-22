@@ -48,6 +48,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
             if canvas_pixel != template_pixel:
                 diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))
 
+    del canvas, chief_template
     return diff_pixels
 
 
@@ -79,6 +80,8 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
             if canvas_pixel != template_pixel:
                 diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))
 
+    del canvas
+
     return diff_pixels
 
 
@@ -109,5 +112,7 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
                 diff_pixels.append((x + offsetX, y + offsetY, canvas_pixel, template_pixel))
 
             print(colorTuple_to_colorIndex(canvas_pixel))
+
+    del canvas, chief_template
 
     return diff_pixels

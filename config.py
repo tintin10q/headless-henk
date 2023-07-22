@@ -1,28 +1,24 @@
+import json
+
 import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
-from colors import BOLD, RESET
+from colors import BOLD, RESET, AQUA
 
 import argparse
 import sys
+from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN
+
+import os
+
+from now import now
 
 parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headless {BOLD}placeNL{RESET} autoplacer writen in python.")
 parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
 args = parser.parse_args()
 
 configfilepath = args.config
-
-from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN
-
-import os
-
-if not os.path.exists(configfilepath):
-    print(PURPLE, configfilepath, RESET + YELLOW + "file not found. Try to create empty config file please fill it in with your auth_token", RESET)
-    with open(configfilepath, 'w+') as config_file:
-        starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': 'chief.placenl.nl', 'stats': False}
-        toml.dump(starter_config, config_file)
-    exit(0)
 
 
 class Brand(TypedDict):
@@ -35,6 +31,12 @@ default_chief_host = 'chief.placenl.nl'
 
 default_reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 default_reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
+
+default_canvas_indexes_json = '[null, 1, 2, null, 4, 5]'
+default_canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]] = [None, 1, 2, None, 4, 5]
+default_canvas_indexes_toml: List[Literal['0', '1', '2', '3', '4', '5', 'None']] = ['None', '1', '2', 'None', '4', '5']
+
+default_stats = False
 
 
 @dataclass
@@ -63,32 +65,105 @@ class Config:
 __config = None
 
 
+def parse_canvas_index_json(canvas_indexes_json: str) -> List[Literal[0, 1, 2, 3, 4, 5, None]]:
+    try:
+        canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]] = json.loads(canvas_indexes_json)
+        if len(canvas_indexes) != 6:
+            print(f"{now()} {RED}Could not parse {AQUA}PLACENL_CANVAS_INDEXES{RED} env var. "
+                  f"It should be a list of 6 elements only consisting out of 0-5 or null. "
+                  f"Example: '{default_canvas_indexes_json}' "
+                  f"{YELLOW}Using default canvas indexes instead = {default_canvas_indexes}")
+            canvas_indexes = default_canvas_indexes
+
+        for canvas_index in canvas_indexes:
+            if canvas_index is not None and not canvas_index in (0, 1, 2, 3, 4, 5):
+                print(f"{now()} {RED}Could not parse {AQUA}PLACENL_CANVAS_INDEXES{RED} env var. "
+                      f"It should be a list of 6 elements only consisting out of 0-5 or null. "
+                      f"Example: '{default_canvas_indexes_json}' "
+                      f"{YELLOW}Using default canvas indexes instead = {default_canvas_indexes}")
+                canvas_indexes = default_canvas_indexes
+                break
+    except json.JSONDecodeError:
+        print(f"{now()} {RED}Could not parse {AQUA}PLACENL_CANVAS_INDEXES{RED} env var. It should be a list of 6 elements only consisting out of 0-5 or null. Going back to default: {default_canvas_indexes}")
+        canvas_indexes = default_canvas_indexes
+
+    return canvas_indexes
+
+
+def load_config_from_env() -> Config:
+    auth_token = os.environ.get('PLACENL_AUTH_TOKEN', None)
+    #  A list of canvas IDs representing the available parts. Use None for missing parts.
+    canvas_indexes_json: str = os.environ.get('PLACENL_CANVAS_INDEXES', default_canvas_indexes_json)
+    canvas_indexes = parse_canvas_index_json(canvas_indexes_json)
+
+    chief_host: str = os.environ.get('PLACENL_CHIEF_HOST', default_chief_host)
+    reddit_uri_https: str = os.environ.get("PLACENL_REDDIT_URI_HTTPS", default_reddit_uri_https)
+    reddit_uri_wss: str = os.environ.get("PLACENL_REDDIT_URI_WSS", default_reddit_uri_https)
+    stats_str = os.environ.get("stats", 'False').lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
+    match stats_str:
+        case 't' | 'true':
+            stats = True
+        case 'f' | 'false':
+            stats = False
+        case _:
+            print(f"{now()} invalid value for PLACENL_SUBSCRIBE_STATS, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
+            stats = default_stats
+    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes)
+    return config
+
+
+def load_config_from_toml_file(filename: str = configfilepath) -> Config:
+    # First try to read from env vars
+
+    if not os.path.exists(filename):
+        print(PURPLE + configfilepath, RESET + RED + f"file not found!", RESET)
+        print(YELLOW + f"Attempting to create {filename} with a default config.{RESET}")
+        with open(configfilepath, 'w+') as config_file:
+            starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
+                              'default_canvas_indexes': default_canvas_indexes_toml}
+            toml.dump(starter_config, config_file)
+            print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
+        exit(0)
+
+    # If that did not work look for the config file
+    with open(filename, "r") as config_file:
+        config_dict = toml.load(config_file)
+
+    auth_token = config_dict.get("auth_token", None)
+    chief_host = config_dict.get("chief_host", default_chief_host)
+    reddit_uri_https = config_dict.get("reddit_uri_https", default_reddit_uri_https)
+    reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
+    stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
+    canvas_indexes = config_dict.get("canvas_indexes", default_canvas_indexes)  # The canvas indexes to download
+    for i in range(len(canvas_indexes)):
+        if canvas_indexes[i] in (-1, 'null', 'none', 'None', 'skip'):
+            canvas_indexes[i] = None
+        elif canvas_indexes[i] in ('0', '1', '2', '3', '4', '5'):
+            canvas_indexes[i] = int(canvas_indexes[i])
+    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes)
+    return config
+
+
 def load_config(ignore_missing_auth: bool = False) -> Config:
     global __config
 
     if __config is not None:
         return __config
 
-    with open(configfilepath, "r") as config_file:
-        config_dict = toml.load(config_file)
+    if "PLACENL_USE_ENV" in os.environ:
+        __config = load_config_from_env()
+    else:
+        __config = load_config_from_toml_file()
 
-        chief_host = config_dict.get("chief_host", default_chief_host)
-        reddit_uri_https = config_dict.get("reddit_uri_https", default_reddit_uri_https)
-        reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
-        auth_token = config_dict.get("auth_token", None)
-        stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
-        canvas_ids = config_dict.get("canvas_indexes", [None, 1, 3, None, 4, 5])  # The canvas ids to watch
+    if not ignore_missing_auth and not __config.auth_token.startswith("Bearer "):
+        print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
+        exit(1)
 
-        if (ignore_missing_auth or auth_token) and reddit_uri_wss and reddit_uri_https and chief_host:
-            print(BLUE, "Starting with chief host:", RESET, PURPLE, chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if chief_host != default_chief_host else "")
-            print(BLUE, "Starting with reddit api host:", RESET + PURPLE + reddit_uri_https, BLUE + "and", PURPLE + reddit_uri_wss, RESET,
-                  YELLOW + "Custom reddit host be careful" + RESET if reddit_uri_https != reddit_uri_https or reddit_uri_wss != default_reddit_uri_wss else "")
+    if (ignore_missing_auth or __config.auth_token) and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
+        print(BLUE, "Starting Henk with chief host:", RESET, PURPLE, __config.chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if __config.chief_host != default_chief_host else "")
+        print(BLUE, "Starting Henk with reddit api host:", RESET + PURPLE + __config.reddit_uri_https, BLUE + "and", PURPLE + __config.reddit_uri_wss, RESET,
+              YELLOW + "Custom reddit host be careful" + RESET if __config.reddit_uri_https != __config.reddit_uri_https or __config.reddit_uri_wss != default_reddit_uri_wss else "")
 
-            if not ignore_missing_auth and not auth_token.startswith("Bearer "):
-                print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
-                exit(1)
-            __config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_ids)
-            return __config
-        else:
-            print(RED, "Missing auth_token ")
-            exit(1)
+        return __config
+    print(RED, f"Invalid configuration{RESET}")
+    exit(1)

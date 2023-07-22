@@ -64,7 +64,7 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -
 def download_and_save_canvas():
     # Replace the image_ids list with the actual IDs of the available parts.
     image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [
-        None, 1, 2, None, 4, 5
+        0, 1, 2, 3, 4, 5
     ]
 
     async def go():

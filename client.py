@@ -74,7 +74,8 @@ class Client:
 
     def place_pixel(self):
         """ Actually place a pixel hype"""
-        delay = 10
+        printc(f"{now()}{GREEN}Starting to place pixel!{RESET}")
+        delay = 1
 
         loop2 = asyncio.new_event_loop()
 
@@ -119,13 +120,15 @@ class Client:
 
         loop2.run_until_complete(self.send_enable_placeNOW_capability())
         reddit.place_pixel(self.config, coords, colorIndex)
+        loop2.run_until_complete(self.send_disable_placeNOW_capability())
+
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
         print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
 
         self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
-        print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + delay / 60:2.2f}{LIGHTGREEN} seconds!{R}")
+        print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
     async def receive_messages(self):
@@ -236,7 +239,7 @@ class Client:
             case 'announcement':
                 self.handle_announcement(payload)
             case 'enabledCapability':
-                await self.handle_enableCapability(payload)
+                self.handle_enableCapability(payload)
             case 'disabledCapability':
                 self.handle_disabledCapability(payload)
             case 'subscribed':
@@ -335,13 +338,13 @@ class Client:
         # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
-        printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown / 60:2.2f}{RESET} {GREEN}minutes")
+        printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + 1}{RESET} {GREEN}seconds")
 
         # Stop the pong timer
         self.pong_timer.cancel()
 
         # Start the place timer
-        self.place_timer = threading.Timer(self.place_cooldown + 10, self.place_pixel)
+        self.place_timer = threading.Timer(self.place_cooldown + 1, self.place_pixel)
         self.place_timer.start()
 
         print(f"{now()} {GREEN}Started place timer again")
@@ -388,10 +391,8 @@ class Client:
                 if reason == "timedOut":
                     raise TimeoutError(message)
 
-    async def handle_enableCapability(self, payload):
+    def handle_enableCapability(self, payload):
         printc(f"{now()} {GREEN}Enabled {AQUA}{payload}{GREEN} capability")
-        if payload == "placeNow":
-            await self.send_disable_placeNOW_capability()
 
     def handle_disabledCapability(self, payload):
         printc(f"{now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
