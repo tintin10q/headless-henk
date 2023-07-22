@@ -26,8 +26,15 @@ async def metdiebanaan():
             if client.pong_timer:
                 client.pong_timer.cancel()
             time.sleep(4)
-        except (websockets.exceptions.InvalidStatusCode):
+        except (websockets.InvalidStatusCode):
             print(f"{now()} Server rejected connection. Lets try connect again in 10 seconds")
+            if client.place_timer:
+                client.place_timer.cancel()
+            if client.pong_timer:
+                client.pong_timer.cancel()
+            time.sleep(10)
+        except (websockets.WebSocketException):
+            print(f"{now()} Websocket error. Lets try connect again in 10 seconds")
             if client.place_timer:
                 client.place_timer.cancel()
             if client.pong_timer:
