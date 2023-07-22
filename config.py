@@ -101,7 +101,6 @@ def load_config_from_env() -> Config:
     chief_host: str = os.environ.get('PLACENL_CHIEF_HOST', default_chief_host)
     reddit_uri_https: str = os.environ.get("PLACENL_REDDIT_URI_HTTPS", default_reddit_uri_https)
     reddit_uri_wss: str = os.environ.get("PLACENL_REDDIT_URI_WSS", default_reddit_uri_wss)
-    reddit_uri_wss: str = os.environ.get("PLACENL_PINGPONG", default_pingpong)
     stats_str = os.environ.get("PLACENL_STATS", str(default_pingpong)).lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
 
     match stats_str:
@@ -167,7 +166,11 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
     if __config is not None:
         return __config
 
-    if "PLACENL_AUTH_TOKEN" in os.environ:
+
+    # if "PLACENL_REDDIT_USERNAME" in
+    using_env = "PLACENL_AUTH_TOKEN" in os.environ or ("PLACENL_REDDIT_USERNAME" in os.environ and "PLACENL_REDDIT_PASSWORD" in os.environ)
+
+    if using_env:
         __config = load_config_from_env()
     else:
         __config = load_config_from_toml_file()
