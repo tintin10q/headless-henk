@@ -9,7 +9,6 @@ from colors import printc, GREEN, RESET, BLUE, RED
 from now import now
 from parse_order import Order
 from canvas import build_canvas_image, colorTuple_to_colorIndex
-from priority import calculate_priority
 import random
 import math
 
@@ -118,6 +117,10 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
 
     return diff_pixels
 
+def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
+    r, g, b, a = pixel
+    if a == 0: return 0
+    return (r << 16) + (g << 8) + b
 
 def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     template_width, template_height = 2000, 1000
