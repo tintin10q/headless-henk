@@ -4,7 +4,7 @@ import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
-from login import get_token
+from login import get_reddit_token
 
 from colors import BOLD, RESET, AQUA
 
@@ -189,7 +189,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
         __config = load_config_from_toml_file()
     
     if (__config.reddit_username and __config.reddit_password):
-        __config.auth_token = get_token(__config.reddit_username, __config.reddit_password)
+        __config.auth_token = get_reddit_token(__config.reddit_username, __config.reddit_password)
 
     if not ignore_missing_auth and not __config.auth_token.startswith("Bearer "):
         print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
