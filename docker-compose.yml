@@ -4,12 +4,14 @@ services:
     image: ghcr.io/tintin10q/headless-henk:latest
     restart: always
     labels:
-    - "com.centurylinklabs.watchtower.enable"
+      - "com.centurylinklabs.watchtower.scope=headless-henkies"
     volumes:
-    - ./config:/config
+      - ./config:/config
     command: "--config=/config/config.toml"
   watchtower:
     image: containrrr/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 3600 --label-enable
+    labels:
+      - "com.centurylinklabs.watchtower.scope=headless-henkies"
+    command: --interval 3600 --scope headless-henkies
