@@ -31,6 +31,8 @@ class Client:
 
     """
 
+    place_delay = 10
+
     def __init__(self, config: Config = None):
         if config is None:
             configuration = load_config()
@@ -65,6 +67,11 @@ class Client:
             printc(f"{now()} {RED}This reddit jwt token can not place pixels!")
             exit(0)
 
+        # start place timer with delay so that we have time to connect to chief
+        self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
+        self.place_timer.start()
+        printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
+
         async with websockets.connect(self.uri) as websocket:
             # Send a sample 'brand' message to the server
             self.websocket = websocket
@@ -76,7 +83,12 @@ class Client:
     def place_pixel(self):
         """ Actually place a pixel hype"""
         printc(f"{now()} {AQUA}== Starting to place pixel =={RESET}")
-        delay = 10
+
+        if not self.id:
+            print(f"{now()} {GREEN}Not connected yet to chief trying again in {Client.place_delay} seconds")
+            self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
+            self.place_timer.start()
+            return  # Silent return if we do not have an id yet
 
         loop2 = asyncio.new_event_loop()
 
@@ -84,19 +96,14 @@ class Client:
         print(f"{now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
         if self.place_timer:
-            self.place_timer.cancel() # just in case
-
-        if not self.id:
-            self.place_timer = threading.Timer(delay, self.place_pixel)
-            self.place_timer.start()
-            return  # Silent return if we do not have an id yet
+            self.place_timer.cancel()  # just in case
 
         if not self.differences:
             print(f"{now()} {LIGHTGREEN}No pixels have to be placed 🥳{R}")
 
-            print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{delay}{LIGHTGREEN} seconds!{R}")
+            print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
-            self.place_timer = threading.Timer(delay, self.place_pixel)
+            self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.start()
             return
 
@@ -132,10 +139,10 @@ class Client:
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
-        print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + delay}{LIGHTGREEN} seconds!{R}")
+        print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
-        self.place_timer = threading.Timer(self.place_cooldown + delay, self.place_pixel)
-        print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + delay:2.2f}{LIGHTGREEN} seconds!{R}")
+        self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
+        print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
     async def receive_messages(self):
@@ -343,32 +350,19 @@ class Client:
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
         self.pong_timer.start()
 
-        # Stop the place timer if we had one
-        if self.place_timer:
-            print(f"{now()} {GREEN}Stopped place timer while processing new order")
-            self.place_timer.cancel()
-
         # handle the order
         self.order_image = await images.download_order_image(self.current_order.images.order)
 
-        # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
-
+        # Show time till next place
         login.refresh_token_if_needed(self.config)
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
 
-        if self.place_cooldown is None:
-            self.place_cooldown = 9
-
-        printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + 1}{RESET} {GREEN}seconds")
+        printc(f"{now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
 
         # Stop the pong timer
         self.pong_timer.cancel()
 
-        # Start the place timer
-        self.place_timer = threading.Timer(self.place_cooldown + 1, self.place_pixel)
-        self.place_timer.start()
-
-        print(f"{now()} {GREEN}Started place timer again")
+        print(f"{now()} {GREEN}Done handling order ")
 
     @staticmethod
     def handle_announcement(payload):
