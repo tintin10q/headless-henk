@@ -7,7 +7,7 @@ from PIL import Image
 
 #
 canvas = Image.open("canvas.png")
-chief_template = Image.open("chieftemplate.png")
+chief_template = Image.open("chieftemplate4bit.png")
 #
 #
 print("differences:", len(images.get_pixel_differences(canvas, chief_template)))

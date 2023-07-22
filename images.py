@@ -5,7 +5,7 @@ import httpx
 from io import BytesIO
 from PIL import Image
 
-from colors import printc, GREEN, RESET, BLUE
+from colors import printc, GREEN, RESET, BLUE, RED
 from now import now
 from parse_order import Order
 from canvas import build_canvas_image, colorTuple_to_colorIndex
@@ -44,6 +44,10 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
         for y in range(height):
             template_pixel = chief_template.getpixel((x, y))
 
+            if isinstance(template_pixel, int):
+                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                return []
+
             if template_pixel[-1] == 0:
                 continue
 
@@ -76,6 +80,10 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
     for x in range(width):
         for y in range(height):
             template_pixel = order_image.getpixel((x, y))
+            if isinstance(template_pixel, int):
+                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                return []
+
             if template_pixel[-1] == 0:
                 continue
 
@@ -98,6 +106,10 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
     for x in range(template_width):
         for y in range(template_height):
             template_pixel = chief_template.getpixel((x, y))
+
+            if isinstance(template_pixel, int):
+                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                return []
 
             if template_pixel[-1] == 0:
                 continue
