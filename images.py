@@ -10,6 +10,8 @@ from now import now
 from parse_order import Order
 from canvas import build_canvas_image, colorTuple_to_colorIndex
 from priority import calculate_priority
+import random
+import math
 
 
 async def download_order_image(url):
@@ -108,6 +110,7 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
                 if priority_image:
                     priority_pixel = priority_image.getpixel((x, y))
                     priority = calculate_priority(priority_pixel)
+                    priority += math.floor(random.random() * 10000) # Increase randomness
 
                 diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel, priority))
 
