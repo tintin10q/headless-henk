@@ -1,8 +1,6 @@
-import datetime
 import os
-from copy import copy, deepcopy
-from pprint import pprint
-from typing import Literal, List
+from copy import copy
+from typing import Literal
 from urllib.parse import urlparse
 
 import httpx
@@ -273,10 +271,9 @@ mutation GetPersonalizedTimer{
     return 0 if not ts else ts / 1000
 
 
-async def get_new_anon_session() -> dict:
+def get_new_anon_session() -> dict:
     printc(f"{now()} {GREEN}Fetching new anon access token from {RED}reddit{GREEN}, this may take a bit")
-    async with httpx.AsyncClient() as client:
-        response = await client.get('https://reddit.com/r/place',
+    response = requests.get('https://reddit.com/r/place',
                                     headers={
                                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                                         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/116.0'

@@ -40,7 +40,7 @@ default_reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
 @dataclass
 class Config:
     auth_token: str
-    # image_ids (list): A list of canvas IDs representing the available parts. Use None for missing parts.
+    #  A list of canvas IDs representing the available parts. Use None for missing parts.
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
