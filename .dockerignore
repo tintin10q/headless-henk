@@ -1,2 +1,12 @@
 Dockerfile
 .dockerignore
+docker-compose.yml
+.github/
+.idea/
+__pycache__/
+.git/
+.gitignore
+canvas.png
+chieftemplate.png
+.venv
+reddit_session.json

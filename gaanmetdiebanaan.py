@@ -2,13 +2,11 @@ import time
 
 import websockets
 
-import reddit
 from client import Client
-from config import load_config, Config
+from config import load_config
 import asyncio
 
 from now import now
-from reddit import Coordinates
 
 
 async def metdiebanaan():

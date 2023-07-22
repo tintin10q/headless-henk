@@ -1,7 +1,6 @@
 import asyncio
 from typing import List, Literal, Tuple
 
-import httpx
 from io import BytesIO
 
 import requests
