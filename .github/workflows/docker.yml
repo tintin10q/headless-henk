@@ -6,6 +6,9 @@ permissions:
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'docker-compose.yml'
 env:
   REGISTRY_IMAGE: ghcr.io/tintin10q/headless-henk
 jobs:
