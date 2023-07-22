@@ -82,7 +82,8 @@ or [docker](https://www.docker.com/).
 
 ## Poetry
 
-To install the dependencies run `poetry install`
+1. First install the dependencies by running `poetry install`  
+2. run `poetry run gaanmetdiebanaan`
 
 ### Instaling poetry 
 
