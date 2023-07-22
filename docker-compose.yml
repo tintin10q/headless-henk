@@ -3,6 +3,13 @@ services:
   henk:
     image: ghcr.io/tintin10q/headless-henk:latest
     restart: always
+    labels:
+    - "com.centurylinklabs.watchtower.enable"
     volumes:
     - ./config:/config
     command: "--config=/config/config.toml"
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 3600 --label-enable
