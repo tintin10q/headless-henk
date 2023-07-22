@@ -1,4 +1,6 @@
 import random
+from typing import Tuple
+
 
 def weighted_shuffle(items, weights):
     if len(items) != len(weights):
@@ -45,3 +47,7 @@ def weighted_shuffle(items, weights):
     return (items[sample()] for _ in range(n - 1))
 
 
+def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
+    r, g, b, a = pixel
+    if a == 0: return 0
+    return (r << 16) + (g << 8) + b
