@@ -13,4 +13,4 @@ RUN apt-get update && \
 	apt-get autopurge -y && \
 	apt-get clean
 COPY . ./
-ENTRYPOINT ["python3","gaanmetdiebanaan.py"]
+ENTRYPOINT ["python3","-u","gaanmetdiebanaan.py"]
