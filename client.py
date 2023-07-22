@@ -75,7 +75,7 @@ class Client:
     def place_pixel(self):
         """ Actually place a pixel hype"""
         printc(f"{now()} {AQUA}== Starting to place pixel =={RESET}")
-        delay = 1
+        delay = 10
 
         loop2 = asyncio.new_event_loop()
 
