@@ -4,8 +4,6 @@ import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
-from login import get_reddit_token
-
 from colors import BOLD, RESET, AQUA
 
 import argparse
@@ -57,6 +55,7 @@ class Config:
     reddit_uri_wss: str = default_reddit_uri_wss
     stats: bool = False
     pingpong: bool = False
+    auth_token_expires_at: float = 0
 
     def get_brand_payload(self) -> Brand:
         brand = {
@@ -128,19 +127,25 @@ def load_config_from_env() -> Config:
             print(f"{now()} invalid value for PLACENL_PINGPONG, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
             pingpong = default_pingpong
 
-    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
+    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https,
+                    canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
+
 
 def create_default_config(filename: configfilepath):
     with open(filename, 'w+') as config_file:
-        starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
+        # starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
+        #                   'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
+
+        starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTERPASSWORD', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https,
+                          'reddit_uri_wss': default_reddit_uri_wss,
                           'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
         toml.dump(starter_config, config_file)
         print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
 
 
 def load_config_from_toml_file(filename: str = configfilepath) -> Config:
-    # First try to read from env vars
+    # First try to read from env var"reddit_username": 'ENTER USERNAME HERE!'s
 
     if not os.path.exists(filename):
         print(PURPLE + configfilepath, RESET + RED + f"file not found!", RESET)
@@ -163,13 +168,13 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     canvas_indexes = config_dict.get("canvas_indexes", default_canvas_indexes)  # The canvas indexes to download
     pingpong = config_dict.get("pingpong", default_pingpong)
 
-
     for i in range(len(canvas_indexes)):
         if canvas_indexes[i] in (-1, 'null', 'none', 'None', 'skip'):
             canvas_indexes[i] = None
         elif canvas_indexes[i] in ('0', '1', '2', '3', '4', '5'):
             canvas_indexes[i] = int(canvas_indexes[i])
-    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
+    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https,
+                    canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
 
@@ -179,6 +184,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
     if __config is not None:
         return __config
 
+    import login  # circular import otherwise
 
     # if "PLACENL_REDDIT_USERNAME" in
     using_env = "PLACENL_AUTH_TOKEN" in os.environ or ("PLACENL_REDDIT_USERNAME" in os.environ and "PLACENL_REDDIT_PASSWORD" in os.environ)
@@ -187,13 +193,31 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
         __config = load_config_from_env()
     else:
         __config = load_config_from_toml_file()
-    
+
     if (__config.reddit_username and __config.reddit_password):
-        __config.auth_token = get_reddit_token(__config.reddit_username, __config.reddit_password)
+
+        if __config.reddit_username == "ENTER USERNAME HERE!":
+            print(f"{now()}{RED}You did not configure your username it is still 'ENTER USERNAME HERE!'", RESET)
+            exit()
+
+        __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
+        if not __config.auth_token:
+            print(f"{now()}RED, Could not login trying one more time", RESET)
+            __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
+        if not __config.auth_token:
+            exit()  # if it failed again just quit
 
     if not ignore_missing_auth and not __config.auth_token.startswith("Bearer "):
-        print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
+        print(f"{now()}RED, Invalid auth token, it should begin with 'Bearer '", RESET)
         exit(1)
+
+    if "…" in __config.auth_token:
+        print(f"{now()} You have '…' character in your auth token. This means your browser truncated the token. Try copying it again and make sure you get the whole token.")
+        exit()
+
+    __config.auth_token_expires_at = login.decode_jwt_and_get_expiry(__config.auth_token)
+
+    login.refresh_token_if_needed(__config)
 
     if (ignore_missing_auth or __config.auth_token) and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
         print(BLUE, "Starting Henk with chief host:", RESET, PURPLE, __config.chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if __config.chief_host != default_chief_host else "")

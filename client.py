@@ -11,6 +11,7 @@ import random
 
 import canvas
 import images
+import login
 import reddit
 from colors import *
 from now import now
@@ -93,7 +94,6 @@ class Client:
         if not self.differences:
             print(f"{now()} {LIGHTGREEN}No pixels have to be placed 🥳{R}")
 
-            # self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
             print(f"{now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{delay}{LIGHTGREEN} seconds!{R}")
 
             self.place_timer = threading.Timer(delay, self.place_pixel)
@@ -117,13 +117,14 @@ class Client:
         x = x % 1000
         y = y % 1000
 
-        print("canvasIndex", canvasIndex)
         coords = reddit.Coordinates(x, y, canvasIndex)
 
         colorTuple = difference[2]
         colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
 
-        print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+        print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+
+        login.refresh_token_if_needed(self.config)
 
         loop2.run_until_complete(self.send_enable_placeNOW_capability())
         reddit.place_pixel(self.config, coords, colorIndex)
@@ -352,6 +353,7 @@ class Client:
 
         # print(f"{now()} {GREEN}Got {RED}{len(self.differences)} {GREEN}differences{R}")
 
+        login.refresh_token_if_needed(self.config)
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
 
         if self.place_cooldown is None:

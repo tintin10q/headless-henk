@@ -1,7 +1,10 @@
 import argparse
+import base64
 import getpass
 import os.path
 import sys
+
+import config
 
 import requests
 import time
@@ -10,7 +13,7 @@ import json
 import toml
 from bs4 import BeautifulSoup
 
-from colors import RED, GREEN, printc
+from colors import RED, GREEN, printc, RESET, YELLOW, AQUA
 from now import now
 
 REDDIT_URL = "https://www.reddit.com"
@@ -32,6 +35,7 @@ INITIAL_HEADERS = {
 
 
 def get_reddit_token(username: str, password: str) -> str | None:
+    print(f"{now()} {GREEN}Logging into {RED}reddit{GREEN} with {AQUA}{username}{RESET}")
     s = requests.session()
     s.headers.update(INITIAL_HEADERS)
 
@@ -71,9 +75,6 @@ def get_reddit_token(username: str, password: str) -> str | None:
     return token
 
 
-import config
-
-
 def cli():
     username = input("usename:")
     password = getpass.getpass('password:')
@@ -91,10 +92,66 @@ def cli():
             configdata = toml.load(config_file)
 
         configdata['auth_token'] = token
+        del configdata['reddit_username']
+        del configdata['reddit_password']
 
         with open(config.configfilepath, 'w') as config_file:
-                toml.dump(configdata, config_file)
+            toml.dump(configdata, config_file)
         print(f"{now()} Token added to config file!")
+
+
+def base64url_decode(data):
+    # Add padding if the data length is not a multiple of 4
+    padding_needed = len(data) % 4
+    if padding_needed:
+        data += b'=' * (4 - padding_needed)
+
+    return base64.urlsafe_b64decode(data)
+
+
+def decode_jwt_and_get_expiry(jwt_token: str):
+    if jwt_token.startswith("Bearer "):
+        jwt_token = jwt_token[7:]
+
+    try:
+        # JWT consists of three parts: header, payload, and signature
+        header, payload, _ = jwt_token.split('.')
+
+        # Decode the payload
+        decoded_payload = base64url_decode(payload.encode('utf-8'))
+
+        # Convert the decoded payload to a JSON object
+        payload_data = json.loads(decoded_payload)
+
+        # Extract the expiration time (exp) from the payload
+        expiration_time = payload_data.get('exp')
+        return expiration_time
+    except (ValueError, IndexError) as e:
+        print(f"{now()} {RED} Token does not have an expiry date!")
+        # Raised when decoding or parsing the JWT fails
+        raise e
+
+
+def is_expired(auth_token_expires_at: float) -> bool:
+    return auth_token_expires_at and auth_token_expires_at < time.time()
+
+
+def refresh_token_if_needed(config_object: config.Config):
+    if is_expired(config_object.auth_token_expires_at):
+        print(f"{now()} {YELLOW}Auth token is expired!", RESET)
+        if config_object.reddit_username and config_object.reddit_password:
+            print(f"{now()} {GREEN}Trying to refresh token we will try 5 times{RESET}")
+            for _ in range(5):
+                new_token = get_reddit_token(config_object.reddit_username, config_object.reddit_password)
+                if new_token:
+                    config.auth_token = new_token
+                    break
+            else:
+                print(f"{now()} {RED}Could not refresh reddit token after 5 tries there is nothing we can do'", RESET)
+                exit(0)
+        else:
+            print(f"{now()} {RED}No username and passwort so there is nothing we can do'", RESET)
+            exit(0)
 
 
 if __name__ == '__main__':

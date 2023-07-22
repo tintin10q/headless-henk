@@ -1,4 +1,16 @@
 # file to play with the images
+
+
+from login import decode_jwt_and_get_expiry
+
+from config import load_config
+
+config = load_config()
+
+print(decode_jwt_and_get_expiry(config.auth_token))
+
+exit()
+
 #
 import websockets
 

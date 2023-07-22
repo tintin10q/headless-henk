@@ -2,37 +2,13 @@
 
 A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python](https://www.python.org/) 3.10.
 
-## How to get reddit jwt?
-
-The easiest way is to just run `login.py` to get a token. This will also automatically add the token to the config.toml. 
-You can also run `login.py` by doing `poetry run login`
-
-You can also go to the website:
-
-1. Go to r/place
-2. Open dev tools by pressing `ctrl+shift+i`
-3. Click on the network tab
-4. Locate the pause button but do not press it, it looks like a stop button on chrome.
-4. Now in the list of request find a `post` request to `https://gql-realtime-2.reddit.com/query`
-5. Press the pause button to stop new request from coming in
-6. Click on the post request in the list
-7. Click on `headers`
-8. Find the Authorization header
-9. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
-
-
-> Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is
-> also because I don't know how reddit refreshes their tokens. Let me know if you konw.
-
-**Be sure to not share this jwt with others!**
-
 # Configuration
 
 You can configure Henk with using a [toml](https://toml.io/) file or using env vars.
 
 ## Toml Config File
 
-You can set the options in a toml configuration file. By default this file is [config.toml](config.toml) in the same
+You can set the options in a toml configuration file. By default, this file is [config.toml](config.toml) in the same
 directory as the program.
 You can also change where this file is located using the `--config` flag.
 
@@ -41,7 +17,8 @@ If you start the program without a config file present a basic config file will 
 This is what the default file looks like:
 
 ```toml
-auth_token = "INSERT TOKEN HERE"
+reddit_username = 'YOUHAVETOADDTHIS'
+reddit_password = 'YOUHAVETOADDTHIS'
 chief_host = "chief.placenl.nl"
 reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
@@ -50,17 +27,32 @@ stats = false   # Wether to subscribe to stats updates from chief
 pingpong = false   # Whether the client should show ping and pong messages.
 ```
 
+### Using an auth token instead of username
+
+Instead of having `reddit_username` and `reddit_password` you can also have:
+
+```toml
+auth_token = "INSERT TOKEN HERE"
+```
+
+But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace it every 24 hours.
+
+See the `How to get a reddit jwt token` section for information on how to get a reddit jwt token. 
+
 > Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
 > of numbers and null.
 
 ## Env Vars
 
-To use env vars you first have to set the `PLACENL_AUTH_TOKEN`. 
-If the `PLACENL_AUTH_TOKEN` env var is set then any config.toml file is ignored and you can set the other vars as described in this table:
+To use env vars you first have to set either the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_PASSWORD`.
+If the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_PASSWORD` env var are set then any config.toml file is ignored, and you can set the other vars as
+described in this table:
 
 | Name                     | Default                                 | Description                                                                                                                                                    |   
 |--------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | PLACENL_AUTH_TOKEN       |                                         | The reddit jwt token to use. See the `How to get reddit jwt` section                                                                                           |
+| PLACENL_REDDIT_USERNAME  |                                         | The reddit username you want to use                                                                                                                            |
+| PLACENL_REDDIT_PASSWORD  |                                         | The reddit password you want to use                                                                                                                            | 
 | PLACENL_CHIEF_HOST       | chief.placenl.nl                        | The host of the PlaceNL chief instance                                                                                                                         |
 | PLACENL_REDDIT_URI_HTTPS | https://gql-realtime-2.reddit.com/query | The reddit https gql api endpoint                                                                                                                              | 
 | PLACENL_REDDIT_URI_WSS   | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
@@ -68,12 +60,13 @@ If the `PLACENL_AUTH_TOKEN` env var is set then any config.toml file is ignored 
 | PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
 | PLACENL_PINGPONG         | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
 
-Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`. 
+Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 
 Here is a bash script which sets default env vars
 
 ```bash
-export PLACENL_AUTH_TOKEN="ADD TOKEN HERE" 
+export PLACENL_REDDIT_USERNAME="ADD USERNAME HERE" 
+export PLACENL_REDDIT_PASSWORD="ADD PASSWORD HERE" 
 export PLACENL_CHIEF_HOST="chief.placenl.nl"
 export PLACENL_REDDIT_URI_HTTPS="https://gql-realtime-2.reddit.com/query"
 export PLACENL_REDDIT_URI_WSS="wss://gql-realtime-2.reddit.com/query"
@@ -124,6 +117,31 @@ python -m venv .venv
 . .venv/bin/activate
 python gaanmetdiebanaan.py
 ```
+
+
+# How to get reddit jwt?
+
+The easiest way is to just run `login.py` to get a token. This will also automatically add the token to the `config.toml`.
+You can also run `login.py` by doing `poetry run login`. These also support the --config flag.
+
+You can also go to the website:
+
+1. Go to r/place
+2. Open dev tools by pressing `ctrl+shift+i`
+3. Click on the network tab
+4. Locate the pause button but do not press it, it looks like a stop button on chrome.
+4. Now in the list of request find a `post` request to `https://gql-realtime-2.reddit.com/query`
+5. Press the pause button to stop new request from coming in
+6. Click on the post request in the list
+7. Click on `headers`
+8. Find the Authorization header
+9. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
+
+> Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is
+> also because I don't know how reddit refreshes their tokens. Let me know if you konw.
+
+**Be sure to not share this jwt with others!**
+
 
 # Downloading the Canvas
 
