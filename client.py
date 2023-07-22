@@ -343,7 +343,7 @@ class Client:
         self.pong_timer.start()
 
         # Stop the place timer if we had one
-        if self.place_timer and not self.place_timer.finished:
+        if self.place_timer:
             print(f"{now()} {GREEN}Stopped place timer while processing new order")
             self.place_timer.cancel()
 
