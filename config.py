@@ -4,6 +4,8 @@ import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
+from login import get_token
+
 from colors import BOLD, RESET, AQUA
 
 import argparse
@@ -43,6 +45,8 @@ default_pingpong = False
 @dataclass
 class Config:
     auth_token: str
+    reddit_username: str
+    reddit_password: str
     #  A list of canvas IDs representing the available parts. Use None for missing parts.
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
@@ -94,6 +98,8 @@ def parse_canvas_index_json(canvas_indexes_json: str) -> List[Literal[0, 1, 2, 3
 
 def load_config_from_env() -> Config:
     auth_token = os.environ.get('PLACENL_AUTH_TOKEN', None)
+    reddit_username = os.environ.get('PLACENL_REDDIT_USERNAME', None)
+    reddit_password = os.environ.get('PLACENL_REDDIT_PASSWORD', None)
     #  A list of canvas IDs representing the available parts. Use None for missing parts.
     canvas_indexes_json: str = os.environ.get('PLACENL_CANVAS_INDEXES', default_canvas_indexes_json)
     canvas_indexes = parse_canvas_index_json(canvas_indexes_json)
@@ -122,7 +128,7 @@ def load_config_from_env() -> Config:
             print(f"{now()} invalid value for PLACENL_PINGPONG, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
             pingpong = default_pingpong
 
-    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
+    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
 def create_default_config(filename: configfilepath):
@@ -148,6 +154,8 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
         config_dict = toml.load(config_file)
 
     auth_token = config_dict.get("auth_token", None)
+    reddit_username = config_dict.get("reddit_username", None)
+    reddit_password = config_dict.get("reddit_password", None)
     chief_host = config_dict.get("chief_host", default_chief_host)
     reddit_uri_https = config_dict.get("reddit_uri_https", default_reddit_uri_https)
     reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
@@ -155,12 +163,13 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     canvas_indexes = config_dict.get("canvas_indexes", default_canvas_indexes)  # The canvas indexes to download
     pingpong = config_dict.get("pingpong", default_pingpong)
 
+
     for i in range(len(canvas_indexes)):
         if canvas_indexes[i] in (-1, 'null', 'none', 'None', 'skip'):
             canvas_indexes[i] = None
         elif canvas_indexes[i] in ('0', '1', '2', '3', '4', '5'):
             canvas_indexes[i] = int(canvas_indexes[i])
-    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
+    config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
 
@@ -178,6 +187,9 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
         __config = load_config_from_env()
     else:
         __config = load_config_from_toml_file()
+    
+    if (__config.reddit_username and __config.reddit_password):
+        __config.auth_token = get_token(__config.reddit_username, __config.reddit_password)
 
     if not ignore_missing_auth and not __config.auth_token.startswith("Bearer "):
         print(RED, "Invalid auth token, it should begin with 'Bearer '", RESET)
