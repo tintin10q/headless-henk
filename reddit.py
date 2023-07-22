@@ -84,7 +84,7 @@ def place_pixel(config: Config, coords: Coordinates, color=3):
     print(config.reddit_uri_https)
     set_pixel = requests.post(config.reddit_uri_https, json=data, headers=headers)
     print(f"{now()} {GREEN}setPixel response: {AQUA if set_pixel.status_code < 300 else RED}{set_pixel.status_code}{GREEN} (should be 200)")
-    print("set pixel response", set_pixel.text)
+    print(f"set pixel response{AQUA}", set_pixel.text, {RESET})
 
 
 # return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
