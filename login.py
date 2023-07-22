@@ -1,7 +1,13 @@
+import getpass
+import sys
+
 import requests
 import time
 import json
 from bs4 import BeautifulSoup
+
+from colors import RED, GREEN, printc
+from now import now
 
 REDDIT_URL = "https://www.reddit.com"
 LOGIN_URL = REDDIT_URL + "/login"
@@ -20,7 +26,7 @@ INITIAL_HEADERS = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 }
 
-def get_token(username: str, password: str) -> str:
+def get_reddit_token(username: str, password: str) -> str:
     s = requests.session()
     s.headers.update(INITIAL_HEADERS)
 
@@ -44,13 +50,13 @@ def get_token(username: str, password: str) -> str:
             })
     time.sleep(0.5)
     if r.status_code != 200:
-        print("Login failed! Most likely you've entered an invalid password.")
+        printc(f"{now()} {RED}Login failed! Most likely you've entered an invalid password.")
         return
     else:
-        print("Login successful!")
+        printc(f"{now()} {GREEN}Login successful!")
 
     # Get new access token
-    print("Getting access token...")
+    printc(f"{now()} {GREEN}Getting {RED}reddit{GREEN} access token...")
     r = s.get(REDDIT_URL)
     soup = BeautifulSoup(r.content, features="html.parser")
     data_str = soup.find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
@@ -58,3 +64,9 @@ def get_token(username: str, password: str) -> str:
     token = 'Bearer ' + data["user"]["session"]["accessToken"]
 
     return token
+
+if __name__ == '__main__':
+    username = input("usename:")
+    password = getpass.getpass('password:')
+    print(get_reddit_token(username, password), file=sys.stderr)
+

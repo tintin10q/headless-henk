@@ -4,6 +4,10 @@ A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python
 
 ## How to get reddit jwt?
 
+The easiest way is to just run `login.py` to get a token. 
+
+You can also go to the website:
+
 1. Go to r/place
 2. Open dev tools by pressing `ctrl+shift+i`
 3. Click on the network tab
@@ -14,6 +18,7 @@ A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python
 7. Click on `headers`
 8. Find the Authorization header
 9. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
+
 
 > Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is
 > also because I don't know how reddit refreshes their tokens. Let me know if you konw.
