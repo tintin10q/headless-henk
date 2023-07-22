@@ -10,6 +10,8 @@ import ojson as json
 import requests
 import websockets
 
+import jwt
+
 from colors import GREEN, printc, RESET, RED, AQUA
 from config import load_config, Config
 
@@ -94,11 +96,11 @@ def place_pixel(config: Config, coords: Coordinates, color=3):
 
 
 def test_authorization(authorization: str) -> bool:
-    """ Returns true if the authorization is actually valid
-        We could either do this by actually verifying the jwt or by just making a request
-        I can't find reddits public key, so I guess we have to just try use it
-    """
-    return get_nextAvailablePixelTimestamp(authorization) is not None
+    try:
+        jwt.decode(authorization, verify=False)
+        return True
+    except jwt.ExpiredSignatureError:
+       return False
 
 
 def get_proxied_url(garlic_url):

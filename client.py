@@ -16,6 +16,7 @@ from colors import *
 from now import now
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
+from login import get_reddit_token
 
 R = RESET
 
@@ -122,6 +123,15 @@ class Client:
 
         colorTuple = difference[2]
         colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
+
+        validToken = reddit.test_authorization(self.config.auth_token)
+        if not validToken:
+            if (self.config.reddit_username and self.config.reddit_password):
+                printc(f"{now()} {YELLOW}Refreshing reddit jwt token")
+                self.config.auth_token = get_reddit_token(self.config.reddit_username, self.config.reddit_password)
+            else:
+                printc(f"{now()} {RED}This reddit jwt token is not valid anymore!")
+                exit(0)
 
         print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
