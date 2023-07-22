@@ -70,16 +70,19 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
     """
     canvas = await build_canvas_image(canvas_indexes)
 
-    width, height = order.size.width, order.size.height
+    template_width, template_height = order.size.width, order.size.height
 
     offsetX = order.offset.x
     offsetY = order.offset.y
 
+    # print(f"{template_width=}, {template_height=}, {offsetX=}, {offsetY=}, {canvas_indexes=}")
+
     diff_pixels = []
 
-    for x in range(width):
-        for y in range(height):
+    for x in range(template_width):
+        for y in range(template_height):
             template_pixel = order_image.getpixel((x, y))
+
             if isinstance(template_pixel, int):
                 print(f"{now()}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
                 return []
@@ -119,12 +122,6 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
             if canvas_pixel != template_pixel:
                 print("not equal", canvas_pixel, template_pixel)
                 diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel))
-
-            # Dit is wip voor als het 4 bit pngs worden
-
-            # print('case (', canvas_pixel, ',', template_pixel, '): continue')
-
-            # print(colorTuple_to_colorIndex(canvas_pixel))
 
     del canvas, chief_template
 

@@ -32,9 +32,9 @@ default_chief_host = 'chief.placenl.nl'
 default_reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 default_reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
 
-default_canvas_indexes_json = '[null, 1, 2, null, 4, 5]'
-default_canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]] = [None, 1, 2, None, 4, 5]
-default_canvas_indexes_toml: List[Literal['0', '1', '2', '3', '4', '5', 'None']] = ['None', '1', '2', 'None', '4', '5']
+default_canvas_indexes_json = '[0, 1, 2, 3, 4, 5]'
+default_canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]] = [0, 1, 2, 3, 4, 5]
+default_canvas_indexes_toml: List[Literal['0', '1', '2', '3', '4', '5', '6']] = ['0', '1', '2', '3', '4', '5']
 
 default_stats = False
 default_pingpong = False
@@ -47,7 +47,7 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '1.0.0'
+    version: str = '1.1.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss

@@ -71,7 +71,7 @@ export PLACENL_AUTH_TOKEN="ADD TOKEN HERE"
 export PLACENL_CHIEF_HOST="chief.placenl.nl"
 export PLACENL_REDDIT_URI_HTTPS="https://gql-realtime-2.reddit.com/query"
 export PLACENL_REDDIT_URI_WSS="wss://gql-realtime-2.reddit.com/query"
-export PLACENL_CANVAS_INDEXES="[null, 1, 3, null, 4, 5]"
+export PLACENL_CANVAS_INDEXES="[0, 1, 2, 3, 4, 5]"
 export PLACENL_SUBSCRIBE_STATS="false"
 export PLACENL_PINGPONG="false"
 ```

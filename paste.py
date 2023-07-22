@@ -1,5 +1,8 @@
 # file to play with the images
 #
+import websockets
+
+print(websockets.WebSocketException)
 
 import images
 import asyncio
@@ -8,7 +11,7 @@ from PIL import Image
 
 #
 canvas = Image.open("canvas.png")
-chief_template = Image.open("chieftemplate4bit.png")
+chief_template = Image.open("chieftemplate.png")
 #
 #
 print("differences:", len(images.get_pixel_differences(canvas, chief_template)))
