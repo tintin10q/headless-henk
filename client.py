@@ -162,7 +162,7 @@ class Client:
                     raise e
 
     async def send_getCapabilities(self):
-        print("Received get capabilities message")
+        print(f"{now()} Received get capabilities message")
 
     async def send_getOrder(self):
         # Handle the 'getOrder' message
@@ -210,13 +210,17 @@ class Client:
         if payload is not None:
             message['payload'] = payload
 
-        print(f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} ", end=R)
-        if payload:
-            pprint(payload)
-        else:
-            print()
+        if message_type != 'pong' or self.config.pingpong:
+            print(f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} ", end=R)
+            if payload:
+                pprint(payload)
+            else:
+                print()
+
         await self.websocket.send(json.dumps(message))
-        printc(GREEN + f"{now()} {GREEN}Sent message: {R}{message}")
+
+        if message_type != 'pong' or self.config.pingpong:
+            printc(GREEN + f"{now()} {GREEN}Sent message: {R}{message}")
 
     async def log_error(self, error_type, error_detail):
         """ Log the error, only the server can actually send errors to us """
@@ -227,7 +231,9 @@ class Client:
 
     async def handle_message(self, message_type: str, payload: dict | str | None):
         # Todo remove with : {payload}
-        print(BLUE + f"{now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
+
+        if message_type != 'ping' or self.config.pingpong:
+            print(BLUE + f"{now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
         match message_type:
             case 'ping':
                 await self.handle_ping()

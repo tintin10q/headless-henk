@@ -37,6 +37,7 @@ default_canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]] = [None, 1, 2, Non
 default_canvas_indexes_toml: List[Literal['0', '1', '2', '3', '4', '5', 'None']] = ['None', '1', '2', 'None', '4', '5']
 
 default_stats = False
+default_pingpong = False
 
 
 @dataclass
@@ -51,6 +52,7 @@ class Config:
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
     stats: bool = False
+    pingpong: bool = False
 
     def get_brand_payload(self) -> Brand:
         brand = {
@@ -99,7 +101,9 @@ def load_config_from_env() -> Config:
     chief_host: str = os.environ.get('PLACENL_CHIEF_HOST', default_chief_host)
     reddit_uri_https: str = os.environ.get("PLACENL_REDDIT_URI_HTTPS", default_reddit_uri_https)
     reddit_uri_wss: str = os.environ.get("PLACENL_REDDIT_URI_WSS", default_reddit_uri_wss)
-    stats_str = os.environ.get("stats", 'False').lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
+    reddit_uri_wss: str = os.environ.get("PLACENL_PINGPONG", default_pingpong)
+    stats_str = os.environ.get("PLACENL_STATS", str(default_pingpong)).lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
+
     match stats_str:
         case 't' | 'true':
             stats = True
@@ -108,7 +112,18 @@ def load_config_from_env() -> Config:
         case _:
             print(f"{now()} invalid value for PLACENL_SUBSCRIBE_STATS, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
             stats = default_stats
-    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes)
+
+    pingpong_str = os.environ.get("PLACENL_PINGPONG", str(default_pingpong)).lower()
+    match pingpong_str:
+        case 't' | 'true':
+            pingpong = True
+        case 'f' | 'false':
+            pingpong = False
+        case _:
+            print(f"{now()} invalid value for PLACENL_PINGPONG, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
+            pingpong = default_pingpong
+
+    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
 
@@ -120,7 +135,7 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
         print(YELLOW + f"Attempting to create {filename} with a default config.{RESET}")
         with open(configfilepath, 'w+') as config_file:
             starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
-                              'default_canvas_indexes': default_canvas_indexes_toml}
+                              'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
             toml.dump(starter_config, config_file)
             print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
         exit(0)
@@ -135,12 +150,14 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     reddit_uri_wss = config_dict.get("reddit_uri_wss", default_reddit_uri_wss)
     stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
     canvas_indexes = config_dict.get("canvas_indexes", default_canvas_indexes)  # The canvas indexes to download
+    pingpong = config_dict.get("pingpong", default_pingpong)
+
     for i in range(len(canvas_indexes)):
         if canvas_indexes[i] in (-1, 'null', 'none', 'None', 'skip'):
             canvas_indexes[i] = None
         elif canvas_indexes[i] in ('0', '1', '2', '3', '4', '5'):
             canvas_indexes[i] = int(canvas_indexes[i])
-    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes)
+    config = Config(auth_token=auth_token, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https, canvas_indexes=canvas_indexes, pingpong=pingpong)
     return config
 
 

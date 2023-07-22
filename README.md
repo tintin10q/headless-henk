@@ -41,6 +41,7 @@ reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
 canvas_indexes = ["0", "1", "2", "3", "4", "5"]  # Canvas indexes to download, Toml has no null we use 'None' 
 stats = false   # Wether to subscribe to stats updates from chief
+pingpong = false   # Whether the client should show ping and pong messages.
 ```
 
 > Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
@@ -59,6 +60,7 @@ If the `PLACENL_AUTH_TOKEN` env var is set then any config.toml file is ignored 
 | PLACENL_REDDIT_URI_WSS   | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
 | PLACENL_CANVAS_INDEXES   | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
 | PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
+| PLACENL_PINGPONG         | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
 
 Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`. 
 
@@ -71,6 +73,7 @@ export PLACENL_REDDIT_URI_HTTPS="https://gql-realtime-2.reddit.com/query"
 export PLACENL_REDDIT_URI_WSS="wss://gql-realtime-2.reddit.com/query"
 export PLACENL_CANVAS_INDEXES="[null, 1, 3, null, 4, 5]"
 export PLACENL_SUBSCRIBE_STATS="false"
+export PLACENL_PINGPONG="false"
 ```
 
 # Runnning Henk
