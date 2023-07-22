@@ -96,7 +96,7 @@ class Client:
 
         if not self.order_image:
             print(f"{now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
-            self.order_image = images.download_order_image(self.current_order.images.order)
+            self.order_image = loop2.run_until_complete(images.download_order_image(self.current_order.images.order))
 
         try:
             self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image))
