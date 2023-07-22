@@ -55,7 +55,7 @@ class Client:
         self.place_timer: threading.Timer | None = None
         self.pong_timer: threading.Timer | None = None
 
-        self.order_image: Image | None
+        self.order_image: Image | None = None
 
     async def connect(self):
         printc(f"{now()} {GREEN}Checking reddit token...")
@@ -85,12 +85,17 @@ class Client:
         printc(f"{now()} {AQUA}== Starting to place pixel =={RESET}")
 
         if not self.id:
+
             print(f"{now()} {GREEN}Not connected yet to chief trying again in {Client.place_delay} seconds")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.start()
             return  # Silent return if we do not have an id yet
 
         loop2 = asyncio.new_event_loop()
+
+        if not self.order_image:
+            print(f"{now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
+            self.order_image = images.download_order_image(self.current_order.images.order)
 
         try:
             self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
@@ -147,7 +152,7 @@ class Client:
         color_name = canvas.colorIndex_to_name(colorIndex)
         print(f"{now()} {GREEN}HEX {RESET}{hex_color}, {GREEN}which is {RESET}{color_name}")
 
-        print(f"{now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+        print(f"{now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex}, {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
         login.refresh_token_if_needed(self.config)
 
