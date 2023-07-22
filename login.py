@@ -55,6 +55,6 @@ def get_token(username: str, password: str) -> str:
     soup = BeautifulSoup(r.content, features="html.parser")
     data_str = soup.find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
     data = json.loads(data_str)
-    token =  data["user"]["session"]["accessToken"]
+    token = 'Bearer ' + data["user"]["session"]["accessToken"]
 
     return token
