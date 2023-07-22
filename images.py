@@ -11,6 +11,7 @@ from parse_order import Order
 from canvas import build_canvas_image, colorTuple_to_colorIndex
 import random
 import math
+from typing import Tuple
 
 
 async def download_order_image(url):

@@ -202,7 +202,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
 
         __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
         if not __config.auth_token:
-            print(f"{now()}RED, Could not login trying one more time", RESET)
+            print(f"{now()} {RED}Could not login trying one more time", RESET)
             __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
         if not __config.auth_token:
             exit()  # if it failed again just quit
