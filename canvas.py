@@ -121,6 +121,12 @@ def rgba_to_hex(rgba_tuple):
 valid_color_codes = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8', '#00A368', '#00CC78', '#7EED56', '#00756F', '#009EAA', '#00CCC0', '#2450A4', '#3690EA', '#51E9F4', '#493AC1', '#6A5CFF', '#94B3FF', '#811E9F', '#B44AC0',
                      '#E4ABFF', '#DE107F', '#FF3881', '#FF99AA', '#6D482F', '#9C6926', '#FFB470', '#000000', '#515252', '#898D90', '#D4D7D9', '#FFFFFF']
 
+color_names = ['N/A - #6D001A', 'N/A - #BE0039', 'Red', 'Orange', 'Yellow', 'N/A - #FFF8B8', 'Dark green', 'N/A - #00CC78', 'Light green', 'N/A - #00756F', 'N/A - #009EAA', 'N/A - #00CCC0', 'Dark blue', 'Blue', 'Light blue',
+               'N/A - #493AC1', 'N/A - #6A5CFF', 'N/A - #94B3FF', 'Dark purple', 'Light purple',
+               'N/A - #E4ABFF', 'N/A - #DE107F', 'N/A - #FF3881', 'Light pink', 'N/A - #6D482F', 'Brown', 'N/A - #FFB470', 'Black', 'N/A - #515252', 'Gray', 'Light gray', 'White']
+
+def colorIndex_to_name(colorIndex: int) -> str:
+    return color_names[colorIndex]
 
 def colorTuple_to_colorIndex(colorTuple: Tuple[int, int, int, int]) -> int:
     hexcode = rgba_to_hex(colorTuple)

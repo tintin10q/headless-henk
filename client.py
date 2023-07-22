@@ -129,7 +129,13 @@ class Client:
         colorTuple = difference[3]
         colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
 
-        print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+        print(f"{now()} {GREEN}Difference:{RESET}", difference)
+
+        hex_color = canvas.rgba_to_hex(colorTuple)
+        color_name = canvas.colorIndex_to_name(colorIndex)
+        print(f"{now()} {GREEN}HEX {RESET}{hex_color}, {GREEN}which is {RESET}{color_name}")
+
+        print(f"{now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
         login.refresh_token_if_needed(self.config)
 
