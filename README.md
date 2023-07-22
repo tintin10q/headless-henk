@@ -48,8 +48,8 @@ stats = false   # Wether to subscribe to stats updates from chief
 
 ## Env Vars
 
-To use env vars you first have to set the `PLACENL_USE_ENV`. It can be any value you just have to make it exist.
-If the `PLACENL_USE_ENV` env var is set then you can set the other vars as described in this table:
+To use env vars you first have to set the `PLACENL_AUTH_TOKEN`. 
+If the `PLACENL_AUTH_TOKEN` env var is set then any config.toml file is ignored and you can set the other vars as described in this table:
 
 | Name                     | Default                                 | Description                                                                                                                                                    |   
 |--------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -60,7 +60,7 @@ If the `PLACENL_USE_ENV` env var is set then you can set the other vars as descr
 | PLACENL_CANVAS_INDEXES   | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
 | PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
 
-Because of the defaults you only have to set `PLACENL_AUTH_TOKEN` and `PLACENL_USE_ENV` for Henk to start.
+Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`. 
 
 Here is a bash script which sets default env vars
 

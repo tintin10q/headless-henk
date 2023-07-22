@@ -150,7 +150,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
     if __config is not None:
         return __config
 
-    if "PLACENL_USE_ENV" in os.environ:
+    if "PLACENL_AUTH_TOKEN" in os.environ:
         __config = load_config_from_env()
     else:
         __config = load_config_from_toml_file()
