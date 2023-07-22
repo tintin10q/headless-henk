@@ -113,11 +113,7 @@ def rgba_to_hex(rgba_tuple):
     # Convert each component to a 2-digit hexadecimal representation
     hex_components = [format(component, '02x') for component in rgba_tuple]
 
-    # Combine the hexadecimal components and add an alpha component if it's not fully opaque (alpha < 255)
-    if rgba_tuple[3] < 255:
-        hex_code = f"#{hex_components[0]}{hex_components[1]}{hex_components[2]}{hex_components[3]}"
-    else:
-        hex_code = f"#{hex_components[0]}{hex_components[1]}{hex_components[2]}"
+    hex_code = f"#{hex_components[0]}{hex_components[1]}{hex_components[2]}"
 
     return hex_code.upper()
 
