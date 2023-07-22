@@ -55,6 +55,7 @@ class Client:
         self.place_timer: threading.Timer | None = None
         self.pong_timer: threading.Timer | None = None
 
+        self.priority_image: Image | None = None
         self.order_image: Image | None = None
 
     async def connect(self):
@@ -98,11 +99,11 @@ class Client:
             self.order_image = images.download_order_image(self.current_order.images.order)
 
         try:
-            self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+            self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image))
         except (asyncio.CancelledError, asyncio.TimeoutError):
             print(f"{now()} {YELLOW}Timed while getting differences trying one more time!")
             try:
-                self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image))
+                self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image))
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 print(f"{now()} {YELLOW}Timed out while differences again! Giving up!")
                 self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
@@ -124,8 +125,16 @@ class Client:
             self.place_timer.start()
             return
 
-        # pick a random pixel and place it
+        # Check if we have priority, otherwise pick a random pixel and place it
         random_index = random.randrange(len(self.differences))
+
+        def weighted_sort(difference):
+            return difference[4]
+
+        if self.priority_image:
+            random_index = 0
+            self.differences.sort(reverse=True, key=weighted_sort)
+
         difference = self.differences[random_index]
 
         x, y = difference[0], difference[1]
@@ -152,7 +161,7 @@ class Client:
         color_name = canvas.colorIndex_to_name(colorIndex)
         print(f"{now()} {GREEN}HEX {RESET}{hex_color}, {GREEN}which is {RESET}{color_name}")
 
-        print(f"{now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex}, {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+        print(f"{now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel with weight={YELLOW}{difference[4]}{GREEN} at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex}, {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
         login.refresh_token_if_needed(self.config)
 
@@ -167,7 +176,7 @@ class Client:
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
         print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
-
+    
     async def receive_messages(self):
         """ Do the basic parsing of an incoming message, separate type and payload
             handle_message actually does something with the message
@@ -315,7 +324,7 @@ class Client:
 
         print(f"{now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
-        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability())
+        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability(), self.send_enable_priorityMappings_capability())
 
         await gather(self.subscribe_to_announcements(), self.subscribe_to_orders() if self.can_place else asyncio.sleep(1), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
 
@@ -373,8 +382,14 @@ class Client:
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
         self.pong_timer.start()
 
-        # handle the order
+        # download the order image
         self.order_image = await images.download_order_image(self.current_order.images.order)
+
+        # download the priority map
+        if self.current_order.images.priority:
+            self.priority_image = await images.download_priority_image(self.current_order.images.priority)
+        else:
+            self.priority_image = None # too avoid having an older priority map
 
         # Show time till next place
         login.refresh_token_if_needed(self.config)

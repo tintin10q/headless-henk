@@ -9,6 +9,9 @@ from colors import printc, GREEN, RESET, BLUE, RED
 from now import now
 from parse_order import Order
 from canvas import build_canvas_image, colorTuple_to_colorIndex
+import random
+import math
+from typing import Tuple
 
 
 async def download_order_image(url):
@@ -20,6 +23,16 @@ async def download_order_image(url):
     order_img = Image.open(BytesIO(response.content))
     order_img.save("chieftemplate.png")
     return order_img
+
+async def download_priority_image(url):
+    printc(f"{now()} {GREEN}Downloading priority image from {BLUE}{url}{RESET}")
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, timeout=2 * 60)
+    response.raise_for_status()
+
+    priority_img = Image.open(BytesIO(response.content))
+    priority_img.save("prioritymap.png")
+    return priority_img
 
 
 async def get_pixel_differences_with_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]):
@@ -54,13 +67,13 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
             canvas_pixel = canvas.getpixel((x + 1500 + offsetX, y + 1000 + offsetY))
 
             if canvas_pixel != template_pixel:
-                diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel))
+                diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel, 0)) # add priority = 0, because we don't know the priority here
 
     del canvas, chief_template
     return diff_pixels
 
 
-async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image):
+async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image, priority_image: Image=None):
     """
     Only download the canvas and supply the order as an input
     :param order_image:
@@ -93,12 +106,22 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
             canvas_pixel = canvas.getpixel((x + 1500 + offsetX, y + 1000 + offsetY))
 
             if canvas_pixel != template_pixel:
-                diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel))
+                priority = 0
+                if priority_image:
+                    priority_pixel = priority_image.getpixel((x, y))
+                    priority = calculate_priority(priority_pixel)
+                    priority += math.floor(random.random() * 10000) # Increase randomness
+
+                diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel, priority))
 
     del canvas
 
     return diff_pixels
 
+def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
+    r, g, b, a = pixel
+    if a == 0: return 0
+    return (r << 16) + (g << 8) + b
 
 def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     template_width, template_height = 2000, 1000

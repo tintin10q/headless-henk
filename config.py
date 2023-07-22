@@ -49,7 +49,7 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '1.2.2'
+    version: str = '2.0.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
@@ -202,7 +202,7 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
 
         __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
         if not __config.auth_token:
-            print(f"{now()}RED, Could not login trying one more time", RESET)
+            print(f"{now()} {RED}Could not login trying one more time", RESET)
             __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
         if not __config.auth_token:
             exit()  # if it failed again just quit
