@@ -208,7 +208,10 @@ class Client:
             message['payload'] = payload
 
         print(f"{now()} {GREEN}Sending message {BLUE}{message_type}{GREEN} ", end=R)
-        pprint(payload)
+        if payload:
+            pprint(payload)
+        else:
+            print()
         await self.websocket.send(json.dumps(message))
         printc(GREEN + f"{now()} {GREEN}Sent message: {R}{message}")
 
