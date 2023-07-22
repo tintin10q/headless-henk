@@ -84,10 +84,14 @@ or [docker](https://www.docker.com/).
 
 To install the dependencies run `poetry install`
 
-> If you don't have [poetry](https://python-poetry.org/docs/) then install it with:
->
-> **Linux**: `curl -sSL https://install.python-poetry.org | python3 -`
->
+### Instaling poetry 
+
+If you don't have [poetry](https://python-poetry.org/docs/) then install it with:
+
+> **Linux Debian/Ubuntu based**:  `apt install python3-poetry`
+ 
+> **Linux other** `curl -sSL https://install.python-poetry.org | python3 -`
+
 > **Windows**: `(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -`
 
 If you have problems with poetry just delete `poetry.lock` and try again.
