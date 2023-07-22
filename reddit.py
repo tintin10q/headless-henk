@@ -1,5 +1,6 @@
 import os
 from copy import copy
+from pprint import pprint
 from typing import Literal
 from urllib.parse import urlparse
 
@@ -84,7 +85,9 @@ def place_pixel(config: Config, coords: Coordinates, color=3):
     print(config.reddit_uri_https)
     set_pixel = requests.post(config.reddit_uri_https, json=data, headers=headers)
     print(f"{now()} {GREEN}setPixel response: {AQUA if set_pixel.status_code < 300 else RED}{set_pixel.status_code}{GREEN} (should be 200)")
-    print(f"set pixel response{AQUA}", set_pixel.text, {RESET})
+    print(f"set pixel response:{AQUA}")
+    pprint(set_pixel.text)
+    print(RESET)
 
 
 # return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
