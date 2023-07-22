@@ -35,7 +35,7 @@ class Client:
 
     def __init__(self, config: Config = None):
         if config is None:
-            configuration = load_config()
+            config = load_config()
         uri = f"wss://{config.chief_host}/ws"  # Replace with your server's WebSocket endpoint
         self.chief_host = config.chief_host
         self.uri = uri
