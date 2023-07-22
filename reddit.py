@@ -352,5 +352,15 @@ def get_anon_session() -> RedditSession:
 def get_anon_authorization() -> str:
     """
     :return:  A Bearer ... jwt
+    Also retries if it doesn't work
     """
-    return get_anon_session().accessToken
+    success = False
+    while not success:
+        try:
+            return get_anon_session().accessToken
+        except IndexError:
+            print(f"{now()} Could not access token from reddit (IndexError), trying again...")
+            time.sleep(1)
+
+
+

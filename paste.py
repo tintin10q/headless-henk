@@ -1,5 +1,6 @@
 # file to play with the images
 #
+
 import images
 import asyncio
 #
@@ -28,6 +29,7 @@ for i in range(width):
 canvas.putpixel((500, 500), (255, 0, 255, 255))
 """
 canvas.save("AAcanvas.png")
+
 #
 
 # from config import load_config

@@ -45,7 +45,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
             template_pixel = chief_template.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                print(f"{now()}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
                 return []
 
             if template_pixel[-1] == 0:
@@ -81,7 +81,7 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
         for y in range(height):
             template_pixel = order_image.getpixel((x, y))
             if isinstance(template_pixel, int):
-                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                print(f"{now()}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
                 return []
 
             if template_pixel[-1] == 0:
@@ -108,22 +108,19 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
             template_pixel = chief_template.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{RED} THE TEMPLATE IS USING 4 BIT PNG AND NOT 32 BIT PNG!")
+                print(f"{now()} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
                 return []
+                # return find_pixel_differences_4bitcanvas(canvas, chief_template, template_width=template_width, template_height=template_height, offset_x=offsetX, offset_y=offsetY)
 
             if template_pixel[-1] == 0:
                 continue
 
             canvas_pixel = canvas.getpixel((x + 1500 + offsetX, y + 1000 + offsetY))
-            canvas.putpixel((x + 1500 + offsetX, y + 1000 + offsetY), (255, 0, 0, 255))
             if canvas_pixel != template_pixel:
                 print("not equal", canvas_pixel, template_pixel)
                 diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel))
 
             # Dit is wip voor als het 4 bit pngs worden
-            # match (canvas_pixel, template_pixel):
-            #     case ( (0, 0, 0, 255), 1 ) | ( (255, 168, 0, 255), 4 ) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255), 6 ):
-            #         continue
 
             # print('case (', canvas_pixel, ',', template_pixel, '): continue')
 
@@ -132,3 +129,26 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
     del canvas, chief_template
 
     return diff_pixels
+
+def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height, offset_x, offset_y) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+    """ This does not work yet"""
+    differences = []
+    last = -1
+    for x in range(template_width):
+        for y in range(template_height):
+
+            template_pixel = chief_template.getpixel((x, y))
+
+            canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
+
+            if template_pixel not in (12,):
+                print((canvas_pixel, template_pixel))
+            if template_pixel != last:
+                print(template_pixel)
+                last = template_pixel
+
+            canvas_pixel = 3
+            match (canvas_pixel, template_pixel):
+                case ( (0, 0, 0, 255), 1 ) | ( (255, 168, 0, 255), 4 ) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255), 6 ) | ((36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
+                    continue
+    return differences
