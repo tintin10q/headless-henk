@@ -93,13 +93,13 @@ from typing import Literal
 def xy_to_canvasIndex(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
     if x < 1000 and y < 1000:
         return 0
-    elif 1000 >= x < 2000 and y < 1000:
+    elif 1000 <= x < 2000 and y < 1000:
         return 1
     elif x >= 2000 and y < 1000:
         return 2
     if x < 1000 and y >= 1000:
         return 3
-    elif 1000 >= x < 2000 and y >= 1000:
+    elif 1000 <= x < 2000 and y >= 1000:
         return 4
     elif x >= 2000 and y >= 1000:
         return 5
