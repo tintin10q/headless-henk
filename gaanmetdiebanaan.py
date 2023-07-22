@@ -1,5 +1,7 @@
 import time
 
+import websockets
+
 import reddit
 from client import Client
 from config import load_config, Config
@@ -24,6 +26,13 @@ async def metdiebanaan():
             if client.pong_timer:
                 client.pong_timer.cancel()
             time.sleep(4)
+        except (websockets.exceptions.InvalidStatusCode):
+            print(f"{now()} Server rejected connection. Lets try connect again in 10 seconds")
+            if client.place_timer:
+                client.place_timer.cancel()
+            if client.pong_timer:
+                client.pong_timer.cancel()
+            time.sleep(10)
         else:  # If another error happened then just let it die
             break
 
