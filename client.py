@@ -126,7 +126,7 @@ class Client:
 
         coords = reddit.Coordinates(x, y, canvasIndex)
 
-        colorTuple = difference[2]
+        colorTuple = difference[3]
         colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
 
         print(f"{now()} {GREEN}Placing pixel at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex} {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
@@ -315,7 +315,7 @@ class Client:
 
             case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn), "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections),
                   "capabilities": {'place': int(place), 'placeNow': int(placenow), 'priorityMappings': int(priorityMappings)}}:
-                dt_object = datetime.datetime.fromtimestamp(date / 1000)
+                dt_object = datetime.datetime.fromtimestamp(date / 999)
                 nice_date = dt_object.strftime('%Y %b %d %H:%M:%S')
                 print(f"""{PURPLE}--== Server Stats ==--
 {GREEN}Time: {AQUA}{nice_date}{RESET}
