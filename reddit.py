@@ -11,13 +11,13 @@ import requests
 import websockets
 
 from colors import GREEN, printc, RESET, RED, AQUA
-from config import load_config, Config
+from config import Config, load_config_without_auth
 
 from dataclasses import dataclass
 
 import time
 
-from now import now
+from now import now, now_usr
 
 
 @dataclass
@@ -106,13 +106,13 @@ def get_proxied_url(garlic_url):
     return f"https://garlic-proxy.placenl.nl/{url.path.replace('/media/', '')}?bust={int(time.time() * 1000)}"
 
 
-async def get_canvas_url(canvas_id: Literal[0, 1, 2, 3, 4, 5]) -> str:
+async def get_canvas_url(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = None) -> str:
     # todo we can also fetch a new anon token for from reddit because anons can also view the canvas
 
     # todo we could also have an image class which keeps the socket connection open and updates the differences
 
-    config = load_config(without_auth=True)
-    printc(f"{now()} {GREEN}Fetching canvas with id: {AQUA}{canvas_id}{GREEN}")
+    config = load_config_without_auth()
+    printc(f"{now_usr(username=username)} {GREEN}Fetching canvas with id: {AQUA}{canvas_id}{GREEN}")
 
     anon_authorization = get_anon_authorization()
 
@@ -308,13 +308,13 @@ class RedditSession:
                 raise ValueError("Could not parse reddit session from dict!")
 
     def save_to_file(self):
-        printc(now(), f"{GREEN}Writing reddit session to {AQUA}reddit_session.json!")
+        printc(now(), f"{GREEN}Writing anon reddit session to {AQUA}reddit_session.json!")
         with open('reddit_session.json', 'w+') as reddit_session:
             ojson.dump({"accessToken": self.accessToken, "expires_at": self.expires_at}, reddit_session, indent=2)
 
     @staticmethod
     def load_from_file() -> "RedditSession":
-        printc(now(), f"{GREEN}Reading reddit session from {AQUA}reddit_session.json!")
+        printc(now(), f"{GREEN}Reading anon reddit session from {AQUA}reddit_session.json!")
         with open('reddit_session.json', 'r') as reddit_session_file:
             reddit_session = ojson.load(reddit_session_file)
             return RedditSession.from_dict(reddit_session)
@@ -331,7 +331,7 @@ def get_anon_session() -> RedditSession:
         try:
             __reddit_session = RedditSession.load_from_file()
         except ValueError:  # if we can't read from the file get a new session
-            printc(now(), RED + "Could not parse reddit session from file, fetching again")
+            printc(now(), RED + "Could not parse anon reddit session from file, fetching again")
 
             __reddit_session = RedditSession.from_dict(get_new_anon_session())
             __reddit_session.save_to_file()

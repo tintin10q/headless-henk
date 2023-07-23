@@ -7,7 +7,7 @@ from io import BytesIO
 from PIL import Image
 
 from colors import printc, GREEN, RESET, BLUE, RED
-from now import now
+from now import now_usr
 from parse_order import Order
 from canvas import build_canvas_image
 import random
@@ -17,8 +17,8 @@ from typing import Tuple
 from config import default_save_images
 
 
-async def download_order_image(url: str, save_images: bool = default_save_images):
-    printc(f"{now()} {GREEN}Downloading order image from {BLUE}{url}{RESET}")
+async def download_order_image(url: str, save_images: bool = default_save_images, *, username: str = None):
+    printc(f"{now_usr(username=username)} {GREEN}Downloading order image from {BLUE}{url}{RESET}")
     async with httpx.AsyncClient() as client:
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
@@ -29,8 +29,8 @@ async def download_order_image(url: str, save_images: bool = default_save_images
     return order_img
 
 
-async def download_priority_image(url: str, save_images: bool = default_save_images):
-    printc(f"{now()} {GREEN}Downloading priority image from {BLUE}{url}{RESET}")
+async def download_priority_image(url: str, save_images: bool = default_save_images, *, username: str = None):
+    printc(f"{now_usr(username=username)} {GREEN}Downloading priority image from {BLUE}{url}{RESET}")
     async with httpx.AsyncClient() as client:
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
@@ -41,14 +41,14 @@ async def download_priority_image(url: str, save_images: bool = default_save_ima
     return priority_img
 
 
-async def get_pixel_differences_with_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], *, save_images: bool = default_save_images):
+async def get_pixel_differences_with_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], *, save_images: bool = default_save_images, username: str = None):
     """
     :param save_images:  True to save as png
     :param order: Order dataclass with information about template image
     :param canvas_indexes: Put None on the missing indexes, so to fetch 1 and 4 you do [None, 1, None, None, 4, None]
     :return:
     """
-    canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes), download_order_image(order.images.order))
+    canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes, username=username), download_order_image(order.images.order, username=username))
 
     if save_images:
         chief_template.save("chieftemplate.png")
@@ -66,7 +66,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
             template_pixel = chief_template.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{now()}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
+                print(f"{now_usr(username=username)}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
                 return []
 
             if template_pixel[-1] == 0:
@@ -81,7 +81,7 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
     return diff_pixels
 
 
-async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image, priority_image: Image = None, *, save_images: bool = default_save_images):
+async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image, priority_image: Image = None, *, save_images: bool = default_save_images, username: str = None):
     """
     Only download the canvas and supply the order as an input
     :param save_images: True to template and canvas as png
@@ -91,7 +91,7 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
     :param canvas_indexes: Put None on the missing indexes, so to fetch 1 and 4 you do [None, 1, None, None, 4, None]
     :return:
     """
-    canvas = await build_canvas_image(canvas_indexes)
+    canvas = await build_canvas_image(canvas_indexes, username=username)
 
     if save_images:
         canvas.save("canvas.png")
@@ -110,7 +110,7 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
             template_pixel = order_image.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{now()}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
+                print(f"{now_usr(username=username)}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
                 return []
 
             if template_pixel[-1] == 0:
@@ -139,7 +139,7 @@ def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
     return (r << 16) + (g << 8) + b
 
 
-def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     """ This one is just for testing, use save_images config to save the images, and then you can load them into this """
     template_width, template_height = 2000, 1500
     offsetX, offsetY = -1000, -1000
@@ -151,7 +151,7 @@ def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[in
             template_pixel = chief_template.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{now()} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
+                print(f"{now_usr(username=username)} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
                 return []
                 # return find_pixel_differences_4bitcanvas(canvas, chief_template, template_width=template_width, template_height=template_height, offset_x=offsetX, offset_y=offsetY)
 

@@ -13,9 +13,11 @@ from now import now
 
 parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headless {BOLD}placeNL{RESET} autoplacer writen in python.")
 parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
+parser.add_argument('--accounts', help="Location of the toml accounts file", default='accounts.toml')
 args = parser.parse_args()
 
 configfilepath = args.config
+accountsfilepath = args.accounts
 
 
 class Brand(TypedDict):
@@ -136,7 +138,7 @@ def create_default_config(filename: configfilepath):
         # starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
         #                   'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
 
-        starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTER PASSWORD', 'chief_host': default_chief_host, 'reddit_uri_https': default_reddit_uri_https,
+        starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTER PASSWORD HERE!', 'chief_host': default_chief_host, 'reddit_uri_https': default_reddit_uri_https,
                           'reddit_uri_wss': default_reddit_uri_wss,
                           'default_canvas_indexes': default_canvas_indexes_toml, 'stats': default_stats, "pingpong": default_pingpong, "save_images": default_save_images}
         toml.dump(starter_config, config_file)
@@ -177,7 +179,12 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     return config
 
 
-def load_config(without_auth: bool = False) -> Config:
+def load_config() -> Config:
+    """
+    Loads the config from either env vars or config.toml (configfilename)
+    It loads from env vars if  "PLACENL_AUTH_TOKEN" is set or both "PLACENL_REDDIT_USERNAME" and "PLACENL_REDDIT_PASSWORD" are set
+    :return: the config
+    """
     global __config
 
     if __config is not None:
@@ -193,7 +200,7 @@ def load_config(without_auth: bool = False) -> Config:
     else:
         __config = load_config_from_toml_file()
 
-    if (__config.reddit_username and __config.reddit_password) and not without_auth:
+    if (__config.reddit_username and __config.reddit_password):
 
         if __config.reddit_username == "ENTER USERNAME HERE!":
             print(f"{now()}{RED} You did not configure your username in {configfilepath} it is still 'ENTER USERNAME HERE!'", RESET)
@@ -206,7 +213,7 @@ def load_config(without_auth: bool = False) -> Config:
         if not __config.auth_token:
             exit()  # if it failed again just quit
 
-    if not without_auth and not __config.auth_token.startswith("Bearer "):
+    if not __config.auth_token.startswith("Bearer "):
         print(f"{now()}RED, Invalid auth token, it should begin with 'Bearer '", RESET)
         exit(1)
 
@@ -214,13 +221,11 @@ def load_config(without_auth: bool = False) -> Config:
         print(f"{now()} You have '…' character in your auth token. This means your browser truncated the token. Try copying it again and make sure you get the whole token.")
         exit()
 
+    __config.auth_token_expires_at = login.decode_jwt_and_get_expiry(__config.auth_token)
 
-    if not without_auth:
-        __config.auth_token_expires_at = login.decode_jwt_and_get_expiry(__config.auth_token)
+    login.refresh_token_if_needed(__config)
 
-        login.refresh_token_if_needed(__config)
-
-    if (without_auth or __config.auth_token) and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
+    if __config.auth_token and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
         print(BLUE, "Starting Henk with chief host:", RESET, PURPLE, __config.chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if __config.chief_host != default_chief_host else "")
         print(BLUE, "Starting Henk with reddit api host:", RESET + PURPLE + __config.reddit_uri_https, BLUE + "and", PURPLE + __config.reddit_uri_wss, RESET,
               YELLOW + "Custom reddit host be careful" + RESET if __config.reddit_uri_https != __config.reddit_uri_https or __config.reddit_uri_wss != default_reddit_uri_wss else "")
@@ -228,3 +233,37 @@ def load_config(without_auth: bool = False) -> Config:
         return __config
     print(RED, f"Invalid configuration{RESET}")
     exit(1)
+
+
+def load_config_without_auth() -> Config:
+    """Loads config from file or env vars, does not cache, but does load from cache if its there, does not do any auth checking and stuff like load_config does"""
+    if __config is not None:
+        return __config
+
+    return load_config_without_auth_without_cache()
+
+
+def load_config_without_auth_without_cache() -> Config:
+    using_env = "PLACENL_AUTH_TOKEN" in os.environ or ("PLACENL_REDDIT_USERNAME" in os.environ and "PLACENL_REDDIT_PASSWORD" in os.environ)
+
+    if using_env:
+        return load_config_from_env()
+    else:
+        return load_config_from_toml_file()
+
+
+@dataclass
+class Account:
+    reddit_username: str
+    reddit_password: str
+
+
+def load_accounts() -> List[Account]:
+    with open(accountsfilepath, 'r') as accountsfile:
+        accounts_dict = toml.load(accountsfile)
+
+    accounts = []
+    for username, password in accounts_dict.items():
+        accounts.append(Account(username, password))
+
+    return accounts

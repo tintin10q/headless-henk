@@ -8,20 +8,20 @@ from PIL import Image
 
 import reddit
 from colors import GREEN, AQUA, RESET, printc, BLUE
-from now import now
+from now import now_usr
 
 
-async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5]):
-    canvas_url = await reddit.get_canvas_url(canvas_id)
+async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = None):
+    canvas_url = await reddit.get_canvas_url(canvas_id, username=username)
     # async with httpx.AsyncClient() as client:
     #     response = await client.get(canvas_url)
-    printc(f'{now()} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
+    printc(f'{now_usr(username=username)} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
     response = requests.get(canvas_url)
     # response.raise_for_status()
     return Image.open(BytesIO(response.content))
 
 
-async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -> Image.Image:
+async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], username: str = None) -> Image.Image:
     """
     Builds the complete canvas image by stacking the available parts.
 
@@ -31,6 +31,7 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -
 
     Returns:
         Image.Image: A PIL Image object representing the complete canvas image.
+        :param username: username of user building the canvas
     """
     if not image_ids:
         raise ValueError("The image_ids list should not be empty.")
@@ -39,7 +40,7 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -
 
     for i, image_id in enumerate(image_ids):
         if image_id is not None:
-            canvas_part = await get_canvas_part(image_id)
+            canvas_part = await get_canvas_part(image_id, username=username)
             canvas_parts[i] = canvas_part
 
     # Calculate the size of the final canvas image.

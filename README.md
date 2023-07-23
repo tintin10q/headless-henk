@@ -2,9 +2,88 @@
 
 A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python](https://www.python.org/) 3.10.
 
+# TLDR
+
+How to get started using docker.
+
+1. Create an `accounts.toml` file
+2. In `accounts.toml` fill in your red<span></span>dit accounts lke this:
+```toml 
+username1 = "password1"
+username2 = "password2"
+username3 = "password3"
+```
+3. Run `docker compose up -d` 
+4. Run `docker compose logs` to show the logs 
+5. Run ``
+
+If you do not have docker installed run 'curl -sSL https://get.docker.com/ | CHANNEL=stable bash'
+
+
+# Runnning Henk
+
+You can run henk in 3 ways. Using [poetry](https://python-poetry.org/docs/), [pip](https://pypi.org/project/pip/)
+or [docker](https://www.docker.com/).
+
+## Run Henk with Poetry
+
+1. First install the dependencies by running `poetry install`
+2. run `poetry run gaanmetdiebanaan`
+
+### Instaling poetry
+
+If you don't have [poetry](https://python-poetry.org/docs/) then install it with:
+
+> **Linux Debian/Ubuntu based**:  `apt install python3-poetry`
+
+> **Linux other** `curl -sSL https://install.python-poetry.org | python3 -`
+
+> **Windows**: `(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -`
+
+If you have problems with poetry just delete `poetry.lock` and try again.
+
+**Start the client with `poetry run gaanmetdiebanaan`**
+
+## Run Henk with Docker
+
+There is also a docker available at: [ghcr.io/tintin10q/headless-henk:latest](ghcr.io/tintin10q/headless-henk:latest).
+This docker supports every linux architecture you can imagine, so you can use your (old) Raspberry Pi as wel!
+
+> To install docker run `curl -sSL https://get.docker.com/ | CHANNEL=stable bash`
+
+Create your `accounts.toml` file
+
+Run `docker compose up -d`
+
+It should just run.
+
+If you want to edit your config you can edit the `config/config.toml` with you config. After editing,
+run `docker compose restart`.
+
+To stop the compose, run `docker compose down`
+
+## Run Henk Using Pip
+
+If you do not want to use poetry you can also just make a virtual environment yourself. Ensure you are
+running `python3.10`, run `python --version`. Henk won't work with lower python than 3.10.
+
+First create `accounts.toml`
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python gaanmetdiebanaan.py
+```
+
 # Configuration
 
-You can configure Henk with using a [toml](https://toml.io/) file or using env vars.
+You can configure Henk with using a config [toml](https://toml.io/) file or using env vars.
+
+**You can place 1 account in this configuration. If you want to use multiple accounts in the same process you have to
+use an `accounts.toml`.**
+
+- You can configure the name of the `accounts.toml` with the `--accounts` flag.
+- You can configure the name of the `config.toml` with the `--config` flag.
 
 ## Toml Config File
 
@@ -17,8 +96,7 @@ If you start the program without a config file present a basic config file will 
 This is what the default file looks like:
 
 ```toml
-reddit_username = 'YOUHAVETOADDTHIS'
-reddit_password = 'YOUHAVETOADDTHIS'
+reddit_username = 'ENTER USERNAME HERE!'
 chief_host = "chief.placenl.nl"
 reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
@@ -36,17 +114,21 @@ Instead of having `reddit_username` and `reddit_password` you can also have:
 auth_token = "INSERT TOKEN HERE"
 ```
 
-But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace it every 24 hours. Whenever you replace the token it will work for another 24 hours.
+But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace
+it every 24 hours. Whenever you replace the token it will work for another 24 hours.
 
-See the [How to get a reddit jwt token](https://github.com/tintin10q/headless-henk#how-to-get-reddit-jwt) section for information on how to get a reddit jwt token. 
+See the [How to get a reddit jwt token](https://github.com/tintin10q/headless-henk#how-to-get-reddit-jwt) section for
+information on how to get a reddit jwt token.
 
 > Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
 > of numbers and null.
 
 ## Env Vars
 
-To use env vars you first have to set either the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_PASSWORD`.
-If the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_PASSWORD` env var are set then any config.toml file is ignored, and you can set the other vars as
+To use env vars you first have to set either the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME`
+and `PLACENL_REDDIT_PASSWORD`.
+If the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_PASSWORD` env var are set then any
+config.toml file is ignored, and you can set the other vars as
 described in this table:
 
 | Name                     | Default                                 | Description                                                                                                                                                    |   
@@ -78,81 +160,35 @@ export PLACENL_PINGPONG="false"
 export PLACENL_SAVE_IMAGES="false"
 ```
 
-# Runnning Henk
-
-You can run henk in 3 ways. Using [poetry](https://python-poetry.org/docs/), [pip](https://pypi.org/project/pip/)
-or [docker](https://www.docker.com/).
-
-## Poetry
-
-1. First install the dependencies by running `poetry install`  
-2. run `poetry run gaanmetdiebanaan`
-
-### Instaling poetry 
-
-If you don't have [poetry](https://python-poetry.org/docs/) then install it with:
-
-> **Linux Debian/Ubuntu based**:  `apt install python3-poetry`
- 
-> **Linux other** `curl -sSL https://install.python-poetry.org | python3 -`
-
-> **Windows**: `(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -`
-
-If you have problems with poetry just delete `poetry.lock` and try again.
-
-**Start the client with `poetry run gaanmetdiebanaan`**
-
-## Docker
-
-There is also a docker available at: [ghcr.io/tintin10q/headless-henk:latest](ghcr.io/tintin10q/headless-henk:latest).
-This docker supports every linux architecture you can imagine, so you can use your (old) Raspberry Pi as wel!
-
-For easy use, use docker compose:
-
-`docker compose up -d`
-
-edit the `config/config.toml` with you config. After editing, run `docker compose restart`.
-
-To stop the compose, run `docker compose down`
-
-## Using Pip
-
-If you do not want to use poetry you can also just make a virtual environment yourself. Ensure you are
-running `python3.10`, run `python --version`. Henk won't work with lower python than 3.10.
-
-```bash
-python -m venv .venv
-. .venv/bin/activate
-python gaanmetdiebanaan.py
-```
-
-
 # How to get reddit jwt?
 
-The easiest way is to just run `login.py` to get a token. This will also automatically add the token to the `config.toml`.
-You can also run `login.py` by doing `poetry run login`. These also support the --config flag.
+You don't need a reddit jwt because you can just log in using an account and password. If you want to use multiple accounts create an `account.toml` and run Henk.
 
-You can also go to the website:
+If you do want to run with a token then The easiest way is to just run `login.py` to get a token. This will also automatically add the token to
+the `config.toml`. You can also run `login.py` by doing `poetry run login`. Both running `login.py` and  `poetry run login` support the --config flag.
+
+If the login does it work 
+
+## You can also go to the website:
 
 1. Go to r/place
 2. Open dev tools by pressing `ctrl+shift+i`
 3. Click on the network tab
 4. Locate the pause button but do not press it, it looks like a stop button on chrome.
 5. Place a pixel
-6. Wait until you hear the success noice 
+6. Wait until you hear the success noice
 7. Press the pause button to stop new request from coming in
 8. Now in the list of request find a `post` request to `https://gql-realtime-2.reddit.com/query`
 9. Click on the post request in the list
 10. Click on `headers`
 11. Find the Authorization header
 12. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
-13. Make sure you copy the entire token, you can probably right click 
+13. Make sure you copy the entire token, you can probably right-click
 
 > Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is
 > also because I don't know how reddit refreshes their tokens. Let me know if you konw.
 
-**Be sure to not share this jwt with others!**
-
+**Be sure to not share this jwt with others! It is basically the same as sharing your password!**
 
 # Downloading the Canvas
 
@@ -162,7 +198,7 @@ As a bonus feature you can run
 poetry run downloadcanvas
 ``` 
 
-to download the canvas. You don't have to put your auth token in `config.toml` for this to work.
+to download the canvas. You don't have to put your auth token in `config.toml` or create an `acounts.toml` for this to work.
 
 <br>
 <br>

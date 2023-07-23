@@ -1,47 +1,61 @@
+import os.path
 import time
 
 import websockets
 
 import reddit
 from client import Client
-from config import load_config, Config
+from colors import GREEN, RED, RESET, AQUA
+from config import load_config, load_accounts, accountsfilepath, load_config_without_auth_without_cache
 import asyncio
 
 from now import now
-from reddit import Coordinates
+
+import login
+
+
+async def run_with_accounts_toml():
+    print(f"{now()} {GREEN}Detected {accountsfilepath}")
+
+    accounts = load_accounts()
+    configs = []
+
+    for account in accounts:
+        config = load_config_without_auth_without_cache()
+
+        config.reddit_username = account.reddit_username
+        config.reddit_password = account.reddit_password
+
+        config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+
+        if config.auth_token == None:  # try one more time
+            print(f"{now()} {RED}Could not login for {AQUA}{account.reddit_username}{RED} trying one more time", RESET)
+            config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+        if config.auth_token == None:  # try one more time
+            print(f"{now()} {RED}Could not login for {AQUA}{account.reddit_username}{RESET}")
+            continue
+
+        configs.append(config)
+
+    clients = [Client(config) for config in configs]
+
+    if not clients:
+        print(f"{now()} {RED}There were no valid clients in {AQUA}{accountsfilepath}{RESET}. Make sure you have the right password. Change the accounts and try again.")
+        return
+
+    run_client_coreroutines = [Client.run_client(client) for client in clients]
+
+    await asyncio.gather(*run_client_coreroutines)
 
 
 async def metdiebanaan():
-    config = load_config()
-    # make client
-    client = Client(config)
-
-    while True:
-        try:
-            await client.connect()
-        except (TimeoutError, asyncio.exceptions.TimeoutError):
-            print(f"{now()} We got disconnected. Lets try connect again in 4 seconds")
-            if client.place_timer:
-                client.place_timer.cancel()
-            if client.pong_timer:
-                client.pong_timer.cancel()
-            time.sleep(4)
-        except (websockets.InvalidStatusCode):
-            print(f"{now()} Server rejected connection. Lets try connect again in 10 seconds")
-            if client.place_timer:
-                client.place_timer.cancel()
-            if client.pong_timer:
-                client.pong_timer.cancel()
-            time.sleep(10)
-        except (websockets.WebSocketException):
-            print(f"{now()} Websocket error. Lets try connect again in 10 seconds")
-            if client.place_timer:
-                client.place_timer.cancel()
-            if client.pong_timer:
-                client.pong_timer.cancel()
-            time.sleep(10)
-        else:  # If another error happened then just let it die
-            break
+    if os.path.exists(accountsfilepath):
+        await run_with_accounts_toml()
+    else:
+        config = load_config()
+        # make client
+        client = Client(config)
+        await Client.run_client(client)
 
 
 def gaan():
