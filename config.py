@@ -185,7 +185,6 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
         print(PURPLE + configfilepath, RESET + RED + f"file not found!", RESET)
         print(YELLOW + f"Attempting to create {filename} with a default config.{RESET}")
         create_default_config(filename)
-        exit(0)
 
     # If that did not work look for the config file
     with open(filename, "r") as config_file:
