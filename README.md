@@ -1,24 +1,32 @@
 # Headless Henk
 
 A headless [placeNL](https://github.com/PlaceNL/Chief) client written in [python](https://www.python.org/) 3.10.
+This client has the advantage of using much less RAM than the headless firefox client.
 
 # TLDR
 
-How to get started using docker.
+The easies way to run Henk is using docker.
 
-1. Create an `accounts.toml` file
-2. In `accounts.toml` fill in your red<span></span>dit accounts lke this:
+1. Create an `accounts.toml` file somewhere
+2. In `accounts.toml` fill in your reddit accounts lke this:
+
 ```toml 
 username1 = "password1"
 username2 = "password2"
 username3 = "password3"
 ```
-3. Run `docker compose up -d` 
-4. Run `docker compose logs` to show the logs 
-5. Run ``
 
-If you do not have docker installed run 'curl -sSL https://get.docker.com/ | CHANNEL=stable bash'
+3. Download the [docker-compose.yml](https://raw.githubusercontent.com/tintin10q/headless-henk/main/docker-compose.yml)
+   file (wget https://raw.githubusercontent.com/tintin10q/headless-henk/main/docker-compose.yml) to the same directory
+   as `accounts.toml`
+3. Run `docker compose up -d`
+4. Run `docker compose logs` to show Henk's logs
+5. run `docker compose down` to stop Henk.
 
+If you do not have docker installed run `curl -sSL https://get.docker.com/ | CHANNEL=stable bash` for
+windows [use this guide](https://www.geeksforgeeks.org/how-to-install-docker-on-windows/)
+
+If you have trouble running the docker check out Run Henk with Poetry below. That method is also pretty easy.
 
 # Runnning Henk
 
@@ -27,7 +35,10 @@ or [docker](https://www.docker.com/).
 
 ## Run Henk with Poetry
 
-1. First install the dependencies by running `poetry install`
+This is the easiest if you do not want to use docker.
+
+0. Clone the repo `git clone https://github.com/tintin10q/headless-henk.git` and open it in a shell
+1. Install the dependencies by running `poetry install`
 2. run `poetry run gaanmetdiebanaan`
 
 ### Instaling poetry
@@ -42,7 +53,7 @@ If you don't have [poetry](https://python-poetry.org/docs/) then install it with
 
 If you have problems with poetry just delete `poetry.lock` and try again.
 
-**Start the client with `poetry run gaanmetdiebanaan`**
+**Again, you start the client with `poetry run gaanmetdiebanaan`**
 
 ## Run Henk with Docker
 
@@ -67,11 +78,12 @@ To stop the compose, run `docker compose down`
 If you do not want to use poetry you can also just make a virtual environment yourself. Ensure you are
 running `python3.10`, run `python --version`. Henk won't work with lower python than 3.10.
 
-First create `accounts.toml`
+First create `accounts.toml` as described and then run:
 
 ```bash
 python -m venv .venv
 . .venv/bin/activate
+pip install -r requirements.txt
 python gaanmetdiebanaan.py
 ```
 
@@ -85,18 +97,39 @@ use an `accounts.toml`.**
 - You can configure the name of the `accounts.toml` with the `--accounts` flag.
 - You can configure the name of the `config.toml` with the `--config` flag.
 
+## Accounts Toml File
+
+The [accounts.toml](accounts.toml) file is very simple. It is just `username="password"` on every line. Like this:
+
+```toml
+username1 = "password1"
+username2 = "password2"
+username3 = "password3"
+```
+
+If you have weird characters in your username then this is also a valid accounts.toml:
+
+```toml
+"us.er.name1" = "password1"
+"us er name2" = "password2"
+username3 = "password3"
+```
+
+You can configure the name of the `accounts.toml` with the `--accounts` flag.
+
 ## Toml Config File
 
 You can set the options in a toml configuration file. By default, this file is [config.toml](config.toml) in the same
 directory as the program.
 You can also change where this file is located using the `--config` flag.
 
-If you start the program without a config file present a basic config file will be created for you.
+If you start the program without a config file nor an accounts.toml present a basic config file will be created for you.
 
 This is what the default file looks like:
 
 ```toml
 reddit_username = 'ENTER USERNAME HERE!'
+reddit_password = 'ENTER PASSWORD HERE!'
 chief_host = "chief.placenl.nl"
 reddit_uri_https = 'https://gql-realtime-2.reddit.com/query'
 reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
@@ -106,6 +139,9 @@ pingpong = false   # Whether the client should show ping and pong messages.
 save_images = false   # Whether the client should save images, canvas.png prioritymap.png and chieftemplate.png
 ```
 
+In the config file you can only use 1 account, if you want to use multiple accounts in one process use
+an `accounts.toml`.
+
 ### Using an auth token instead of username
 
 Instead of having `reddit_username` and `reddit_password` you can also have:
@@ -114,14 +150,14 @@ Instead of having `reddit_username` and `reddit_password` you can also have:
 auth_token = "INSERT TOKEN HERE"
 ```
 
-But if you do not have `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace
+But if you do specify a `reddit_username` and `reddit_password` then the token will not refresh, and you have to replace
 it every 24 hours. Whenever you replace the token it will work for another 24 hours.
 
 See the [How to get a reddit jwt token](https://github.com/tintin10q/headless-henk#how-to-get-reddit-jwt) section for
 information on how to get a reddit jwt token.
 
-> Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
-> of numbers and null.
+If you use the `auth_token` config it is still good to specify only `reddit_username` as this will still show up in the
+logs. The auth token is still used as long as you do not specify a `reddit_password`.
 
 ## Env Vars
 
@@ -148,6 +184,9 @@ Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 
 Here is a bash script which sets default env vars
 
+> Note that in the toml file the `canvas_indexes` are all strings. In the env var this different and it is a json array
+> of numbers and null.
+
 ```bash
 export PLACENL_REDDIT_USERNAME="ADD USERNAME HERE" 
 export PLACENL_REDDIT_PASSWORD="ADD PASSWORD HERE" 
@@ -160,14 +199,19 @@ export PLACENL_PINGPONG="false"
 export PLACENL_SAVE_IMAGES="false"
 ```
 
+If an `accounts.toml` file is present the contents of `PLACENL_REDDIT_PASSWORD`,  `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_AUTH_TOKEN` env vars are ignored.
+
 # How to get reddit jwt?
 
-You don't need a reddit jwt because you can just log in using an account and password. If you want to use multiple accounts create an `account.toml` and run Henk.
+You don't need a reddit jwt because you can just log in using an account and password. If you want to use multiple
+accounts create an `account.toml` and run Henk.
 
-If you do want to run with a token then The easiest way is to just run `login.py` to get a token. This will also automatically add the token to
-the `config.toml`. You can also run `login.py` by doing `poetry run login`. Both running `login.py` and  `poetry run login` support the --config flag.
+If you do want to run with a token then The easiest way is to just run `login.py` to get a token. This will also
+automatically add the token to
+the `config.toml`. You can also run `login.py` by doing `poetry run login`. Both running `login.py`
+and  `poetry run login` support the --config flag.
 
-If the login does it work 
+If the login does it work
 
 ## You can also go to the website:
 
@@ -198,7 +242,8 @@ As a bonus feature you can run
 poetry run downloadcanvas
 ``` 
 
-to download the canvas. You don't have to put your auth token in `config.toml` or create an `acounts.toml` for this to work.
+to download the canvas. You don't have to put your auth token in `config.toml` or create an `acounts.toml` for this to
+work.
 
 <br>
 <br>
