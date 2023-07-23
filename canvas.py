@@ -3,6 +3,7 @@ from typing import List, Literal, Tuple
 
 from io import BytesIO
 
+import httpx
 import requests
 from PIL import Image
 
@@ -13,10 +14,10 @@ from now import now_usr
 
 async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = None):
     canvas_url = await reddit.get_canvas_url(canvas_id, username=username)
-    # async with httpx.AsyncClient() as client:
-    #     response = await client.get(canvas_url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(canvas_url)
     printc(f'{now_usr(username=username)} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
-    response = requests.get(canvas_url)
+    # response = requests.get(canvas_url)
     # response.raise_for_status()
     return Image.open(BytesIO(response.content))
 
@@ -41,11 +42,11 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
     get_canvas_coroutines = []
     for i, image_id in enumerate(image_ids):
         if image_id is not None:
-            async def get_canvaspart(index):
-                canvas_part = await get_canvas_part(image_id, username=username)
-                canvas_parts[index] = canvas_part
+            async def get_canvaspart(*, _index, _image_id):
+                canvas_part = await get_canvas_part(_image_id, username=username)
+                canvas_parts[_index] = canvas_part
 
-            get_canvas_coroutines.append(get_canvaspart(i))
+            get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
 
     await asyncio.gather(*get_canvas_coroutines)
 

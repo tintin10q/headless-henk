@@ -287,7 +287,8 @@ def get_new_anon_session() -> dict:
     configRaw = body.split('<script id="data">window.___r = ')[1].split(';</script>')[0]
     parsed_config = json.loads(configRaw)
 
-    auth_session = {"accessToken": "Bearer " + copy(parsed_config['user']['session']['accessToken']), "expires_at": parsed_config['user']['session']['expiresIn'] + int(time.time())}  # copy the user_session, so we can delete the big object
+    auth_session = {"accessToken": "Bearer " + copy(parsed_config['user']['session']['accessToken']),
+                    "expires_at": parsed_config['user']['session']['expiresIn'] + int(time.time()) - 100}  # copy the user_session, so we can delete the big object
 
     del parsed_config  # delete the big session dict
 
