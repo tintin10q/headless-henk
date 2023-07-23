@@ -19,7 +19,6 @@ from now import now_usr
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
 from images import ImageDiff
-
 R = RESET
 
 
@@ -32,7 +31,7 @@ class Client:
     Its simple, we receive messages in receive_message and then the handle_message function handles them.
 
     """
-    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image'
+    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected'
 
     place_delay = 5
 
@@ -46,6 +45,9 @@ class Client:
         self.config: Config = config
         self.current_order: Order | None = None
         self.differences = []
+
+        # False when not connected to chief
+        self.connected = False
 
         self.place_cooldown = 0
         self.can_place = False
@@ -80,19 +82,21 @@ class Client:
             f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
 
         async with websockets.connect(self.uri) as websocket:
+            print(f"{now_usr(username=self.config.reddit_username)} {GREEN} connected to chief!")
+            self.connected = True
+
             # Send a sample 'brand' message to the server
             self.websocket = websocket
 
             # Receive messages from the server
             await self.receive_messages()
-        self.websocket = None  # why
 
     def place_pixel(self):
         """ Actually place a pixel hype"""
         printc(f"{self.now()} {AQUA}== Starting to place pixel =={RESET}")
 
-        if not self.id:
-            print(f"{self.now()} {GREEN}Not connected yet to chief trying again in {Client.place_delay} seconds")
+        if not self.id:  # this may be out of date after a disconnect.
+            print(f"{self.now()} {GREEN}Never yet connected to chief trying again in {Client.place_delay} seconds")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.daemon = True
             self.place_timer.start()
@@ -100,8 +104,21 @@ class Client:
 
         loop2 = asyncio.new_event_loop()
 
-        if not self.order_image:
+        if not self.order_image:  # It can happen that we do not have an order image yet
             print(f"{self.now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
+
+            if not self.current_order:  # If we have no order we can not place a pixel
+                print(f"{self.now()} {YELLOW}The client has no order yet. Sending getOrder message!{RESET}")
+                if self.connected:
+                    loop2.run_until_complete(self.send_getOrder())
+                    print(f"{self.now()} {GREEN}Send order message! Trying to place pixel again in {AQUA}30{GREEN} seconds{RESET}")
+                else:
+                    print(f"{self.now()} {RED}The client is currently not connected to chief. Schedule place pixel again in {AQUA}30{RED} seconds{STOP}")
+                self.place_timer = threading.Timer(30, self.place_pixel)
+                self.place_timer.daemon = True
+                self.place_timer.start()
+                return
+
             self.order_image = loop2.run_until_complete(
                 images.download_order_image(self.current_order.images.order, save_images=self.config.save_images,
                                             username=self.config.reddit_username))
@@ -190,9 +207,17 @@ class Client:
 
         login.refresh_token_if_needed(self.config)
 
-        loop2.run_until_complete(self.send_enable_placeNOW_capability())
+        send_place_now = False
+        if self.connected:
+            loop2.run_until_complete(self.send_enable_placeNOW_capability())
+            send_place_now = True
+        else:
+            print(f"{self.now()} {YELLOW}The client is currently not connected to chief. Not sending placeNOW capability{STOP}")
+
         reddit.place_pixel(self.config, coords, colorIndex)
-        loop2.run_until_complete(self.send_disable_placeNOW_capability())
+
+        if send_place_now:
+            loop2.run_until_complete(self.send_disable_placeNOW_capability())
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
@@ -287,7 +312,15 @@ class Client:
             else:
                 print()
 
-        await self.websocket.send(json.dumps(message))
+        try:
+            await self.websocket.send(json.dumps(message))
+        except websockets.ConnectionClosedError:
+            print(f"{self.now()} {RED} Could not send {AQUA}{message_type}{RED} message to chief because the connection is closed. {RESET}")
+            print("Now we need to try and reconnect but for now just throwing timedOut")
+            raise TimeoutError()
+        except (websockets.WebSocketException) as error:
+            print(f"{self.now()} {RED} Could not send {AQUA}{message_type}{RED} message to chief :( moving on.. {RESET}{error=}")
+            # Idk if moving on is a good idea, we can always raise TimeOutError if it is a problem
 
         if message_type != 'pong' or self.config.pingpong:
             printc(GREEN + f"{self.now()} {GREEN}Sent message: {R}{message}")
@@ -509,24 +542,29 @@ class Client:
                 await client.connect()
             except (TimeoutError, asyncio.exceptions.TimeoutError):
                 print(
-                    f"{now_usr(username=client.config.reddit_username)} We got disconnected. Lets try connect again in 4 seconds")
-                if client.place_timer:
-                    client.place_timer.cancel()
+                    f"{now_usr(username=client.config.reddit_username)} {YELLOW}We got disconnected from chief. Lets try connect again in {AQUA}60{YELLOW} seconds.{BLUE} place timer should still be running!{R}")
+                # if client.place_timer:
+                #     client.place_timer.cancel()
+                # Removed stopping place timer so that keeps going!
+                client.connected = False
                 if client.pong_timer:
                     client.pong_timer.cancel()
-                time.sleep(4)
+                time.sleep(60) # Longer to give Chief time to restart
             except (websockets.InvalidStatusCode):
                 print(
                     f"{now_usr(username=client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")
-                if client.place_timer:
-                    client.place_timer.cancel()
+                # if client.place_timer:
+                #     client.place_timer.cancel()
+                # Removed stopping place timer so that keeps going!
+                client.connected = False
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 time.sleep(10)
             except (websockets.WebSocketException):
                 print(f"{now_usr(username=client.config.reddit_username)} Websocket error. Lets try connect again in 10 seconds")
-                if client.place_timer:
-                    client.place_timer.cancel()
+                # if client.place_timer:
+                #     client.place_timer.cancel()
+                client.connected = False
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 time.sleep(10)
@@ -548,11 +586,12 @@ class Client:
                     client.pong_timer.cancel()
                 if client.config.reddit_username:
                     print(
-                        f"{now_usr(username=client.config.reddit_username)} Could not refresh token for {client.config.reddit_username} stopping")
+                        f"{now_usr(username=client.config.reddit_username)} Could not refresh token for {AQUA}{client.config.reddit_username}{RESET} stopping {AQUA}{client.config.reddit_username}{RESET}")
                 else:
                     print(f"{now_usr(username=client.config.reddit_username)} Could not refresh token for this account")
                 return
-            else:  # If another error happened then just let it die
+            else:  # If no error happened, but we got here then just let it die
+                print(f"{PURPLE}Stopping {AQUA}{client.config.reddit_username}{RESET}")
                 break
 
     def now(self, formatstr="%H:%M:%S") -> str:
