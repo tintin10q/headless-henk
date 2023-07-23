@@ -177,7 +177,7 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     return config
 
 
-def load_config(ignore_missing_auth: bool = False) -> Config:
+def load_config(without_auth: bool = False) -> Config:
     global __config
 
     if __config is not None:
@@ -193,10 +193,10 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
     else:
         __config = load_config_from_toml_file()
 
-    if (__config.reddit_username and __config.reddit_password):
+    if (__config.reddit_username and __config.reddit_password) and not without_auth:
 
         if __config.reddit_username == "ENTER USERNAME HERE!":
-            print(f"{now()}{RED}You did not configure your username it is still 'ENTER USERNAME HERE!'", RESET)
+            print(f"{now()}{RED} You did not configure your username in {configfilepath} it is still 'ENTER USERNAME HERE!'", RESET)
             exit()
 
         __config.auth_token = login.get_reddit_token(__config.reddit_username, __config.reddit_password)
@@ -206,19 +206,21 @@ def load_config(ignore_missing_auth: bool = False) -> Config:
         if not __config.auth_token:
             exit()  # if it failed again just quit
 
-    if not ignore_missing_auth and not __config.auth_token.startswith("Bearer "):
+    if not without_auth and not __config.auth_token.startswith("Bearer "):
         print(f"{now()}RED, Invalid auth token, it should begin with 'Bearer '", RESET)
         exit(1)
 
-    if "…" in __config.auth_token:
+    if __config.auth_token and "…" in __config.auth_token:
         print(f"{now()} You have '…' character in your auth token. This means your browser truncated the token. Try copying it again and make sure you get the whole token.")
         exit()
 
-    __config.auth_token_expires_at = login.decode_jwt_and_get_expiry(__config.auth_token)
 
-    login.refresh_token_if_needed(__config)
+    if not without_auth:
+        __config.auth_token_expires_at = login.decode_jwt_and_get_expiry(__config.auth_token)
 
-    if (ignore_missing_auth or __config.auth_token) and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
+        login.refresh_token_if_needed(__config)
+
+    if (without_auth or __config.auth_token) and __config.reddit_uri_wss and __config.reddit_uri_https and __config.chief_host:
         print(BLUE, "Starting Henk with chief host:", RESET, PURPLE, __config.chief_host, RESET, YELLOW + "Custom chief host be careful" + RESET if __config.chief_host != default_chief_host else "")
         print(BLUE, "Starting Henk with reddit api host:", RESET + PURPLE + __config.reddit_uri_https, BLUE + "and", PURPLE + __config.reddit_uri_wss, RESET,
               YELLOW + "Custom reddit host be careful" + RESET if __config.reddit_uri_https != __config.reddit_uri_https or __config.reddit_uri_wss != default_reddit_uri_wss else "")
