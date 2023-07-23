@@ -4,11 +4,8 @@ import toml
 from dataclasses import dataclass
 from typing import TypedDict, List, Literal
 
-from colors import BOLD, RESET, AQUA
-
 import argparse
-import sys
-from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN
+from colors import RED, RESET, BLUE, PURPLE, YELLOW, GREEN, AQUA, BOLD
 
 import os
 
@@ -38,6 +35,7 @@ default_canvas_indexes_toml: List[Literal['0', '1', '2', '3', '4', '5', '6']] = 
 
 default_stats = False
 default_pingpong = False
+default_save_images = False
 
 
 @dataclass
@@ -49,13 +47,14 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '2.0.0'
+    version: str = '2.1.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
-    stats: bool = False
-    pingpong: bool = False
+    stats: bool = default_stats
+    pingpong: bool = default_pingpong
     auth_token_expires_at: float = 0
+    save_images: bool = default_save_images
 
     def get_brand_payload(self) -> Brand:
         brand = {
@@ -81,7 +80,7 @@ def parse_canvas_index_json(canvas_indexes_json: str) -> List[Literal[0, 1, 2, 3
             canvas_indexes = default_canvas_indexes
 
         for canvas_index in canvas_indexes:
-            if canvas_index is not None and not canvas_index in (0, 1, 2, 3, 4, 5):
+            if canvas_index is not None and canvas_index not in (0, 1, 2, 3, 4, 5):
                 print(f"{now()} {RED}Could not parse {AQUA}PLACENL_CANVAS_INDEXES{RED} env var. "
                       f"It should be a list of 6 elements only consisting out of 0-5 or null. "
                       f"Example: '{default_canvas_indexes_json}' "
@@ -95,6 +94,17 @@ def parse_canvas_index_json(canvas_indexes_json: str) -> List[Literal[0, 1, 2, 3
     return canvas_indexes
 
 
+def parse_env_bool(env_var_str: str, default: bool, name: str) -> bool:
+    match env_var_str:
+        case 't' | 'true':
+            return True
+        case 'f' | 'false':
+            return False
+        case _:
+            print(f"{now()} invalid value for {name}, it should be t, true, f or false, it is also case insensitive. Using default = {default}")
+            return default
+
+
 def load_config_from_env() -> Config:
     auth_token = os.environ.get('PLACENL_AUTH_TOKEN', None)
     reddit_username = os.environ.get('PLACENL_REDDIT_USERNAME', None)
@@ -106,29 +116,18 @@ def load_config_from_env() -> Config:
     chief_host: str = os.environ.get('PLACENL_CHIEF_HOST', default_chief_host)
     reddit_uri_https: str = os.environ.get("PLACENL_REDDIT_URI_HTTPS", default_reddit_uri_https)
     reddit_uri_wss: str = os.environ.get("PLACENL_REDDIT_URI_WSS", default_reddit_uri_wss)
-    stats_str = os.environ.get("PLACENL_STATS", str(default_pingpong)).lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
-
-    match stats_str:
-        case 't' | 'true':
-            stats = True
-        case 'f' | 'false':
-            stats = False
-        case _:
-            print(f"{now()} invalid value for PLACENL_SUBSCRIBE_STATS, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
-            stats = default_stats
 
     pingpong_str = os.environ.get("PLACENL_PINGPONG", str(default_pingpong)).lower()
-    match pingpong_str:
-        case 't' | 'true':
-            pingpong = True
-        case 'f' | 'false':
-            pingpong = False
-        case _:
-            print(f"{now()} invalid value for PLACENL_PINGPONG, it should be t, true, f or false, it is also case insensitive. Using default = {default_stats}")
-            pingpong = default_pingpong
+    pingpong = parse_env_bool(pingpong_str, default_pingpong, "PLACENL_PINGPONG")
+
+    stats_str = os.environ.get("PLACENL_SUBSCRIBE_STATS", str(default_pingpong)).lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
+    stats = parse_env_bool(stats_str, default_stats, "PLACENL_SUBSCRIBE_STATS")
+
+    save_images_str = os.environ.get("PLACENL_SAVE_IMAGES", str(default_pingpong)).lower()  # Subscribe to stats or not, default is not, they are always shown at the start once
+    save_images = parse_env_bool(save_images_str, default_save_images, "PLACENL_SAVE_IMAGES")
 
     config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https,
-                    canvas_indexes=canvas_indexes, pingpong=pingpong)
+                    canvas_indexes=canvas_indexes, pingpong=pingpong, save_images=save_images)
     return config
 
 
@@ -137,9 +136,9 @@ def create_default_config(filename: configfilepath):
         # starter_config = {"auth_token": 'ENTER TOKEN HERE!', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https, 'reddit_uri_wss': default_reddit_uri_wss,
         #                   'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
 
-        starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTERPASSWORD', 'chief_host': default_chief_host, 'stats': default_stats, 'reddit_uri_https': default_reddit_uri_https,
+        starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTER PASSWORD', 'chief_host': default_chief_host, 'reddit_uri_https': default_reddit_uri_https,
                           'reddit_uri_wss': default_reddit_uri_wss,
-                          'default_canvas_indexes': default_canvas_indexes_toml, "pingpong": False}
+                          'default_canvas_indexes': default_canvas_indexes_toml, 'stats': default_stats, "pingpong": default_pingpong, "save_images": default_save_images}
         toml.dump(starter_config, config_file)
         print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
 
@@ -151,7 +150,6 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
         print(PURPLE + configfilepath, RESET + RED + f"file not found!", RESET)
         print(YELLOW + f"Attempting to create {filename} with a default config.{RESET}")
         create_default_config(filename)
-
         exit(0)
 
     # If that did not work look for the config file
@@ -167,6 +165,7 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
     stats = config_dict.get("stats", False)  # Subscribe to stats or not, default is not, they are always shown at the start once
     canvas_indexes = config_dict.get("canvas_indexes", default_canvas_indexes)  # The canvas indexes to download
     pingpong = config_dict.get("pingpong", default_pingpong)
+    save_images = config_dict.get("save_images", default_save_images)
 
     for i in range(len(canvas_indexes)):
         if canvas_indexes[i] in (-1, 'null', 'none', 'None', 'skip'):
@@ -174,7 +173,7 @@ def load_config_from_toml_file(filename: str = configfilepath) -> Config:
         elif canvas_indexes[i] in ('0', '1', '2', '3', '4', '5'):
             canvas_indexes[i] = int(canvas_indexes[i])
     config = Config(auth_token=auth_token, reddit_username=reddit_username, reddit_password=reddit_password, chief_host=chief_host, stats=stats, reddit_uri_wss=reddit_uri_wss, reddit_uri_https=reddit_uri_https,
-                    canvas_indexes=canvas_indexes, pingpong=pingpong)
+                    canvas_indexes=canvas_indexes, pingpong=pingpong, save_images=save_images)
     return config
 
 

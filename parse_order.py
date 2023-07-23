@@ -1,7 +1,4 @@
 from dataclasses import dataclass
-from types import NoneType
-from typing import List
-
 from colors import PURPLE, RESET, GREEN, AQUA
 
 

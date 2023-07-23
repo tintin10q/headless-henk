@@ -25,6 +25,7 @@ reddit_uri_wss = 'wss://gql-realtime-2.reddit.com/query'
 canvas_indexes = ["0", "1", "2", "3", "4", "5"]  # Canvas indexes to download, Toml has no null we use 'None' 
 stats = false   # Wether to subscribe to stats updates from chief
 pingpong = false   # Whether the client should show ping and pong messages.
+save_images = false   # Whether the client should save images, canvas.png prioritymap.png and chieftemplate.png
 ```
 
 ### Using an auth token instead of username
@@ -59,6 +60,7 @@ described in this table:
 | PLACENL_CANVAS_INDEXES   | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
 | PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
 | PLACENL_PINGPONG         | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
+| PLACENL_SAVE_IMAGES      | false                                   | Whether the client should save images it receives. canvas.png, prioritymap.png and chieftemplate.png                                                           |
 
 Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 
@@ -73,6 +75,7 @@ export PLACENL_REDDIT_URI_WSS="wss://gql-realtime-2.reddit.com/query"
 export PLACENL_CANVAS_INDEXES="[0, 1, 2, 3, 4, 5]"
 export PLACENL_SUBSCRIBE_STATS="false"
 export PLACENL_PINGPONG="false"
+export PLACENL_SAVE_IMAGES="false"
 ```
 
 # Runnning Henk
@@ -135,12 +138,15 @@ You can also go to the website:
 2. Open dev tools by pressing `ctrl+shift+i`
 3. Click on the network tab
 4. Locate the pause button but do not press it, it looks like a stop button on chrome.
-4. Now in the list of request find a `post` request to `https://gql-realtime-2.reddit.com/query`
-5. Press the pause button to stop new request from coming in
-6. Click on the post request in the list
-7. Click on `headers`
-8. Find the Authorization header
-9. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
+5. Place a pixel
+6. Wait until you hear the success noice 
+7. Press the pause button to stop new request from coming in
+8. Now in the list of request find a `post` request to `https://gql-realtime-2.reddit.com/query`
+9. Click on the post request in the list
+10. Click on `headers`
+11. Find the Authorization header
+12. Copy the value of the authorization header. It should start with `Bearer ` and then a bunch of letters seperated.
+13. Make sure you copy the entire token, you can probably right click 
 
 > Realize that these tokens are valid for about 1440 minutes. There is no auto token refresh functionality yet. This is
 > also because I don't know how reddit refreshes their tokens. Let me know if you konw.

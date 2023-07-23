@@ -86,7 +86,6 @@ class Client:
         printc(f"{now()} {AQUA}== Starting to place pixel =={RESET}")
 
         if not self.id:
-
             print(f"{now()} {GREEN}Not connected yet to chief trying again in {Client.place_delay} seconds")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.start()
@@ -96,14 +95,17 @@ class Client:
 
         if not self.order_image:
             print(f"{now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
-            self.order_image = loop2.run_until_complete(images.download_order_image(self.current_order.images.order))
+            self.order_image = loop2.run_until_complete(images.download_order_image(self.current_order.images.order, save_images=self.config.save_images))
 
         try:
-            self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image))
+            self.differences = loop2.run_until_complete(
+                images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image, save_images=self.config.save_images))
         except (asyncio.CancelledError, asyncio.TimeoutError):
             print(f"{now()} {YELLOW}Timed while getting differences trying one more time!")
             try:
-                self.differences = loop2.run_until_complete(images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image))
+                self.differences = loop2.run_until_complete(
+                    images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image,
+                                                                      save_images=self.config.save_images))
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 print(f"{now()} {YELLOW}Timed out while differences again! Giving up!")
                 self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
@@ -176,7 +178,7 @@ class Client:
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
         print(f"{now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
-    
+
     async def receive_messages(self):
         """ Do the basic parsing of an incoming message, separate type and payload
             handle_message actually does something with the message
@@ -383,13 +385,13 @@ class Client:
         self.pong_timer.start()
 
         # download the order image
-        self.order_image = await images.download_order_image(self.current_order.images.order)
+        self.order_image = await images.download_order_image(self.current_order.images.order, save_images=self.config.save_images)
 
         # download the priority map
         if self.current_order.images.priority:
-            self.priority_image = await images.download_priority_image(self.current_order.images.priority)
+            self.priority_image = await images.download_priority_image(self.current_order.images.priority, save_images=self.config.save_images)
         else:
-            self.priority_image = None # too avoid having an older priority map
+            self.priority_image = None  # to avoid having an older priority map
 
         # Show time till next place
         login.refresh_token_if_needed(self.config)
