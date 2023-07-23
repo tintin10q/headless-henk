@@ -30,6 +30,7 @@ class Client:
     Its simple, we receive messages in receive_message and then the handle_message function handles them.
 
     """
+    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image'
 
     place_delay = 5
 
