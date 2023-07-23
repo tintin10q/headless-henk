@@ -19,6 +19,9 @@ from now import now_usr
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
 
+import atexit
+
+
 R = RESET
 
 
@@ -72,7 +75,9 @@ class Client:
 
         # start place timer with delay so that we have time to connect to chief
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
+        self.place_timer.daemon = True
         self.place_timer.start()
+
         printc(f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
 
         async with websockets.connect(self.uri) as websocket:
@@ -90,6 +95,7 @@ class Client:
         if not self.id:
             print(f"{self.now()} {GREEN}Not connected yet to chief trying again in {Client.place_delay} seconds")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
+            self.place_timer.daemon = True
             self.place_timer.start()
             return  # Silent return if we do not have an id yet
 
@@ -112,6 +118,7 @@ class Client:
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 print(f"{self.now()} {YELLOW}Timed out while differences again! Giving up!")
                 self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
+                self.place_timer.daemon = True
                 print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
                 self.place_timer.start()
                 return
@@ -127,6 +134,7 @@ class Client:
             print(f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
+            self.place_timer.daemon = True
             self.place_timer.start()
             return
 
@@ -180,6 +188,7 @@ class Client:
         print(f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
+        self.place_timer.daemon = True
         print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
@@ -346,6 +355,7 @@ class Client:
         loop = asyncio.new_event_loop()
         loop.run_until_complete(self.send_pong())
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
+        self.pong_timer.daemon = True
         self.pong_timer.start()
 
     def handle_stats(self, payload: dict):
@@ -386,6 +396,7 @@ class Client:
 
         # Set a timer for sending pong messages in the background
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
+        self.pong_timer.daemon = True
         self.pong_timer.start()
 
         # download the order image
