@@ -219,6 +219,12 @@ class Client:
         if send_place_now:
             loop2.run_until_complete(self.send_disable_placeNOW_capability())
 
+        if self.connected:
+            print(f"{self.now()} {GREEN}Sending placed pixel to chief")
+            loop2.run_until_complete(self.send_place_msg(x, y))
+        else:
+            print(f"{self.now()} {YELLOW}The client is currently not connected to chief. Not sending placed pixel to chief{STOP}")
+
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
         print(
@@ -297,8 +303,12 @@ class Client:
         brand = self.config.get_brand_payload()
         await self.send_message('brand', brand)
 
+    async def send_place_msg(self, x: int, y: int):
+        print(f"{now_usr(username=self.config.reddit_username)} {GREEN}Sending pixel coords to chief{RESET}")
+        await self.send_message('place', json.dumps({'x': x, 'y': y}))
+
     async def send_message(self, message_type: Literal[
-        'pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe'],
+        'pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe', 'place'],
                            payload=None):
         message = {'type': message_type}
 
@@ -353,6 +363,8 @@ class Client:
                     self.pong_timer.cancel()
                     await self.send_pong()
                     await self.handle_message(message_type, payload)
+            case 'confirmPlace':
+                self.handle_confirmPlace()
             case 'stats':
                 self.handle_stats(payload)
             case 'announcement':
@@ -529,6 +541,9 @@ class Client:
 
     def handle_disabledCapability(self, payload):
         printc(f"{self.now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
+
+    def handle_confirmPlace(self):
+        printc(f"{self.now()} {BLUE}Chief successfully received pixel placement{RESET}")
 
     @staticmethod
     async def run_client(client: "Client", delay: int = None):
