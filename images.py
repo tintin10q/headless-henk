@@ -20,7 +20,7 @@ async def download_order_image(url):
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
 
-    order_img = Image.open(BytesIO(response.content))
+    order_img = Image.open(BytesIO(response.content)).convert("RGBA")
     order_img.save("chieftemplate.png")
     return order_img
 
@@ -30,7 +30,7 @@ async def download_priority_image(url):
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
 
-    priority_img = Image.open(BytesIO(response.content))
+    priority_img = Image.open(BytesIO(response.content)).convert("RGBA")
     priority_img.save("prioritymap.png")
     return priority_img
 

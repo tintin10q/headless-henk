@@ -19,7 +19,7 @@ async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5]):
     printc(f'{now()} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
     response = requests.get(canvas_url)
     # response.raise_for_status()
-    return Image.open(BytesIO(response.content))
+    return Image.open(BytesIO(response.content)).convert("RGBA")
 
 
 async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]]) -> Image.Image:

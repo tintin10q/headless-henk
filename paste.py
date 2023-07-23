@@ -22,8 +22,8 @@ import asyncio
 from PIL import Image
 
 #
-canvas = Image.open("canvas.png")
-chief_template = Image.open("chieftemplate.png")
+canvas = Image.open("canvas.png").convert("RGBA")
+chief_template = Image.open("chieftemplate.png").convert("RGBA")
 #
 #
 print("differences:", len(images.get_pixel_differences(canvas, chief_template)))
