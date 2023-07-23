@@ -13,8 +13,18 @@ from canvas import build_canvas_image
 import random
 import math
 from typing import Tuple
+from dataclasses import dataclass
 
 from config import default_save_images
+
+
+@dataclass
+class ImageDiff:
+    x: int
+    y: int
+    canvas_pixel: Tuple[int, int, int, int]
+    template_pixel: Tuple[int, int, int, int]
+    priority: int
 
 
 async def download_order_image(url: str, save_images: bool = default_save_images, *, username: str = None):
@@ -41,14 +51,16 @@ async def download_priority_image(url: str, save_images: bool = default_save_ima
     return priority_img
 
 
-async def get_pixel_differences_with_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], *, save_images: bool = default_save_images, username: str = None):
+async def get_pixel_differences_with_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], *,
+                                              save_images: bool = default_save_images, username: str = None):
     """
     :param save_images:  True to save as png
     :param order: Order dataclass with information about template image
     :param canvas_indexes: Put None on the missing indexes, so to fetch 1 and 4 you do [None, 1, None, None, 4, None]
     :return:
     """
-    canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes, username=username), download_order_image(order.images.order, username=username))
+    canvas, chief_template = await asyncio.gather(build_canvas_image(canvas_indexes, username=username),
+                                                  download_order_image(order.images.order, username=username))
 
     if save_images:
         chief_template.save("chieftemplate.png")
@@ -75,13 +87,17 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
             canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
 
             if canvas_pixel != template_pixel:
-                diff_pixels.append((x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel, 0))  # add priority = 0, because we don't know the priority here
+                diff_pixels.append(ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel,
+                                             0))  # add priority = 0, because we don't know the priority here
 
     del canvas, chief_template
     return diff_pixels
 
 
-async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]], order_image: Image, priority_image: Image = None, *, save_images: bool = default_save_images, username: str = None):
+async def get_pixel_differences_with_canvas_download(order: Order,
+                                                     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]],
+                                                     order_image: Image, priority_image: Image = None, *,
+                                                     save_images: bool = default_save_images, username: str = None):
     """
     Only download the canvas and supply the order as an input
     :param save_images: True to template and canvas as png
@@ -125,7 +141,8 @@ async def get_pixel_differences_with_canvas_download(order: Order, canvas_indexe
                     priority = calculate_priority(priority_pixel)
                     priority += math.floor(random.random() * 10000)  # Increase randomness
 
-                diff_pixels.append((x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel, priority))
+                diff_pixels.append(
+                    ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel, priority))
 
     del canvas
 
@@ -139,7 +156,8 @@ def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
     return (r << 16) + (g << 8) + b
 
 
-def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[
+    Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     """ This one is just for testing, use save_images config to save the images, and then you can load them into this """
     template_width, template_height = 2000, 1500
     offsetX, offsetY = -1000, -1000
@@ -151,7 +169,8 @@ def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str
             template_pixel = chief_template.getpixel((x, y))
 
             if isinstance(template_pixel, int):
-                print(f"{now_usr(username=username)} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
+                print(
+                    f"{now_usr(username=username)} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
                 return []
                 # return find_pixel_differences_4bitcanvas(canvas, chief_template, template_width=template_width, template_height=template_height, offset_x=offsetX, offset_y=offsetY)
 
@@ -168,7 +187,9 @@ def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str
     return diff_pixels
 
 
-def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height, offset_x, offset_y) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height,
+                                      offset_x, offset_y) -> List[
+    Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     """ This does not work yet, lets hope they don't upload a 4 bit image again """
     differences = []
     last = -1
@@ -187,12 +208,14 @@ def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, t
 
             canvas_pixel = 3
             match (canvas_pixel, template_pixel):
-                case ((0, 0, 0, 255), 1) | ((255, 168, 0, 255), 4) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255), 6 ) | ((36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
+                case ((0, 0, 0, 255), 1) | ((255, 168, 0, 255), 4) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255),
+                                                                                                  6 ) | (
+                         (36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
                     continue
     return differences
 
 
 if __name__ == '__main__':
-    canvas = PIL.Image.open("canvas.png")
-    chief = PIL.Image.open('chieftemplate.png').convert("RGBA")
-    print(len(get_pixel_differences(canvas, chief)))
+    downloaded_canvas = PIL.Image.open("canvas.png")
+    downloaded_template = PIL.Image.open('chieftemplate.png').convert("RGBA")
+    print(len(get_pixel_differences(downloaded_canvas, downloaded_template)))
