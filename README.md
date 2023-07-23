@@ -28,6 +28,8 @@ windows [use this guide](https://www.geeksforgeeks.org/how-to-install-docker-on-
 
 If you have trouble running the docker check out Run Henk with Poetry below. That method is also pretty easy.
 
+> This login method does not work with accounts with 2 factor authentication, disable it. If you have 2fa use the `auth_token` config.
+
 # Runnning Henk
 
 You can run henk in 3 ways. Using [poetry](https://python-poetry.org/docs/), [pip](https://pypi.org/project/pip/)
