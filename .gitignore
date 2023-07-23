@@ -6,6 +6,7 @@ canvas.png
 chieftemplate.png
 .venv
 reddit_session.json
+*.toml
 
 prioritymap.png
 
