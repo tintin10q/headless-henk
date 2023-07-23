@@ -70,7 +70,7 @@ Run `docker compose up -d`
 
 It should just run.
 
-If you want to edit your config you can edit the `config/config.toml` with you config. After editing,
+If you want to edit your config you can edit the `config.toml` with you config. After editing,
 run `docker compose restart`.
 
 To stop the compose, run `docker compose down`
