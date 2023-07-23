@@ -66,6 +66,11 @@ async def run_with_accounts_toml():
 
 
 async def metdiebanaan():
+
+    # Delete reddit session here just in case, so it stays more fresh, we only fetch it once per run
+    if os.path.exists('reddit_session.json'):
+        os.remove('reddit_session.json')
+
     if os.path.exists(accountsfilepath):
         await run_with_accounts_toml()
     else:
