@@ -23,5 +23,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 gaanmetdiebanaan = 'gaanmetdiebanaan:gaan'
+"gaanmetdiebanaan.py" = 'gaanmetdiebanaan:gaan'
 downloadcanvas = 'canvas:download_and_save_canvas'
 login = 'login:cli'
+"login.py" = 'login:cli'
