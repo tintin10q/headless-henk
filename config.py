@@ -14,10 +14,12 @@ from now import now
 parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headless {BOLD}placeNL{RESET} autoplacer writen in python.")
 parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
 parser.add_argument('--accounts', help="Location of the toml accounts file", default='accounts.toml')
+parser.add_argument('--tokens_cache', help="Location of the toml tokens_cache file", default='tokens_cache.toml')
 args = parser.parse_args()
 
 configfilepath = args.config
 accountsfilepath = args.accounts
+tokens_cachepath = args.tokens_cache
 
 
 class Brand(TypedDict):
@@ -69,6 +71,24 @@ class Config:
 
 
 __config = None
+
+
+def load_tokens_cache_toml() -> dict:
+    """ The tokens.toml file is a mapping from usernames to account tokens, this is a cache
+    It should be username: token keys, please include bearer in the token
+    """
+
+    with open(tokens_cachepath, "r+") as tokens_cachefile:
+        return toml.load(tokens_cachefile)
+
+
+def cache_auth_token(*, username: str, token: str):
+    with open(tokens_cachepath, "r+") as tokens_cachefile:
+        tokens_cache = toml.load(tokens_cachefile)
+    tokens_cache[username] = token
+    with open(tokens_cachepath, "r+") as tokens_cachefile:
+        toml.dump(tokens_cachefile, tokens_cache)
+    print(f"{now()} {GREEN}Cached reddit token for {AQUA}{username}{RESET}")
 
 
 def parse_canvas_index_json(canvas_indexes_json: str) -> List[Literal[0, 1, 2, 3, 4, 5, None]]:

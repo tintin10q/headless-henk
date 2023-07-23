@@ -5,8 +5,8 @@ import websockets
 
 import reddit
 from client import Client
-from colors import GREEN, RED, RESET, AQUA
-from config import load_config, load_accounts, accountsfilepath, load_config_without_auth_without_cache
+from colors import GREEN, RED, RESET, AQUA, YELLOW
+from config import load_config, load_accounts, load_tokens_cache_toml, accountsfilepath, load_config_without_auth_without_cache, cache_auth_token
 import asyncio
 
 from now import now
@@ -20,17 +20,34 @@ async def run_with_accounts_toml():
     accounts = load_accounts()
     configs = []
 
+    tokens_cache = load_tokens_cache_toml()
+
     for account in accounts:
         config = load_config_without_auth_without_cache()
 
         config.reddit_username = account.reddit_username
         config.reddit_password = account.reddit_password
 
-        config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+        # Check if we have a valid token in the cache
+        if config.reddit_username in tokens_cache:
+            config.auth_token = tokens_cache[config.reddit_username]
+            print(f"{now()} {GREEN} Using cached reddit token for {AQUA}{account.reddit_username}", RESET)
+            expires_at = login.decode_jwt_and_get_expiry(config.auth_token)
+            if login.is_expired(expires_at):
+                print(f"{now()} {YELLOW}Cached token for {AQUA}{account.reddit_username}{YELLOW} is expired fetching a new one", RESET)
+                config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+                cache_auth_token(username=config.reddit_username, token=config.auth_token)
+        else:
+            # no valid token found in the cache fetch a new one and cache it
+            config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+            cache_auth_token(username=config.reddit_username, token=config.auth_token)
 
-        if config.auth_token == None:  # try one more time
+        # Check if we now have a valid token
+        if config.auth_token == None:  # try one more time to login
             print(f"{now()} {RED}Could not login for {AQUA}{account.reddit_username}{RED} trying one more time", RESET)
             config.auth_token = login.get_reddit_token(account.reddit_username, account.reddit_password)
+            cache_auth_token(username=config.reddit_username, token=config.auth_token)
+
         if config.auth_token == None:  # try one more time
             print(f"{now()} {RED}Could not login for {AQUA}{account.reddit_username}{RESET}")
             continue
