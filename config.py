@@ -246,8 +246,8 @@ def load_config() -> Config:
         if not __config.auth_token:
             exit()  # if it failed again just quit
 
-    if not __config.auth_token.startswith("Bearer "):
-        print(f"{now()}RED, Invalid auth token, it should begin with 'Bearer '", RESET)
+    if isinstance(__config.auth_token, str) and not __config.auth_token.startswith("Bearer "):
+        print(f"{now()}{RED} Invalid auth token in config ({configfilepath}), it should begin with 'Bearer '", RESET)
         exit(1)
 
     if __config.auth_token and "…" in __config.auth_token:
