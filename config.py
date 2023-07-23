@@ -99,7 +99,7 @@ def cache_auth_token(*, username: str, token: str):
     tokens_cache[username] = token
 
     with open(tokens_cachepath, "r+") as tokens_cachefile:
-        toml.dump(tokens_cachefile, tokens_cache)
+        toml.dump(tokens_cache, tokens_cachefile)
 
     print(f"{now()} {GREEN}Cached reddit token for {AQUA}{username}{RESET}")
 
