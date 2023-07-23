@@ -1,4 +1,5 @@
 import os.path
+import random
 import time
 
 import websockets
@@ -66,9 +67,8 @@ async def run_with_accounts_toml():
 
 
 async def metdiebanaan():
-
     # Delete reddit session here just in case, so it stays more fresh, we only fetch it once per run
-    if os.path.exists('reddit_session.json'):
+    if os.path.exists('reddit_session.json') and random.randint(0, 10) == 4:
         os.remove('reddit_session.json')
 
     if os.path.exists(accountsfilepath):
