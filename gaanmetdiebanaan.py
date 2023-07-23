@@ -5,7 +5,7 @@ import websockets
 
 import reddit
 from client import Client
-from colors import GREEN, RED, RESET, AQUA, YELLOW
+from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE
 from config import load_config, load_accounts, load_tokens_cache_toml, accountsfilepath, load_config_without_auth_without_cache, cache_auth_token
 import asyncio
 
@@ -57,7 +57,7 @@ async def run_with_accounts_toml():
     clients = [Client(config) for config in configs]
 
     if not clients:
-        print(f"{now()} {RED}There were no valid clients in {AQUA}{accountsfilepath}{RESET}. Make sure you have the right password. Change the accounts and try again.")
+        print(f"{now()} {LIGHTRED}There were no valid clients in {AQUA}{accountsfilepath}{RESET}. {BLUE}Make sure you have an internet connection and the right password. Change the accounts and try again.{RESET}")
         return
 
     run_client_coreroutines = [Client.run_client(client, delay=index * 30) for index, client in enumerate(clients)]

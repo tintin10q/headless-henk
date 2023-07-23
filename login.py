@@ -39,7 +39,12 @@ def get_reddit_token(username: str, password: str) -> str | None:
     s = requests.session()
     s.headers.update(INITIAL_HEADERS)
 
-    s.get(REDDIT_URL)
+    try:
+        s.get(REDDIT_URL)
+    except Exception as e:
+        printc(f"{now_usr()} {RED}Could not connect to reddit!{RESET}")
+        printc(f"{RED}This was the error:{RESET}", e)
+        return None
     time.sleep(0.5)
 
     # Get csrf token from login page
