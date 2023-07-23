@@ -179,18 +179,18 @@ class Client:
 
         difference = self.differences[random_index]
 
-        x, y = difference.x, difference.y
-        canvasIndex = canvas.xy_to_canvas_index(x, y)
+        global_x, global_y = difference.x, difference.y
+        canvasIndex = canvas.xy_to_canvas_index(global_x, global_y)
 
         if canvasIndex is None:
-            printc(RED, f"{self.now()}Canvas index is None!!!, x={x}, y={y}")
+            printc(RED, f"{self.now()}Canvas index is None!!!, x={global_x}, y={global_y}")
             return
 
-        x_ui = x - 1500
-        y_ui = y - 1000
+        x_ui = global_x - 1500
+        y_ui = global_y - 1000
 
-        x = x % 1000
-        y = y % 1000
+        x = global_x % 1000
+        y = global_y % 1000
 
         coords = reddit.Coordinates(x, y, canvasIndex)
 
@@ -208,21 +208,21 @@ class Client:
 
         login.refresh_token_if_needed(self.config)
 
-        send_place_now = False
+        actually_send_place_now = False
         if self.connected:
             loop2.run_until_complete(self.send_enable_placeNOW_capability())
-            send_place_now = True
+            actually_send_place_now = True
         else:
             print(f"{self.now()} {YELLOW}The client is currently not connected to chief. Not sending placeNOW capability{STOP}")
 
         reddit.place_pixel(self.config, coords, colorIndex)
 
-        if send_place_now:
+        if actually_send_place_now:
             loop2.run_until_complete(self.send_disable_placeNOW_capability())
 
         if self.connected:
             print(f"{self.now()} {GREEN}Sending placed pixel to chief")
-            loop2.run_until_complete(self.send_place_msg(x, y))
+            loop2.run_until_complete(self.send_place_msg(global_x, global_y, colorIndex))
         else:
             print(f"{self.now()} {YELLOW}The client is currently not connected to chief. Not sending placed pixel to chief{STOP}")
 
@@ -304,9 +304,8 @@ class Client:
         brand = self.config.get_brand_payload()
         await self.send_message('brand', brand)
 
-    async def send_place_msg(self, x: int, y: int):
-        print(f"{now_usr(username=self.config.reddit_username)} {GREEN}Sending pixel coords to chief{RESET}")
-        await self.send_message('place', json.dumps({'x': x, 'y': y}))
+    async def send_place_msg(self, x: int, y: int, color: int):
+        await self.send_message('place', {'x': x, 'y': y, 'color': color})
 
     async def send_message(self, message_type: Literal[
         'pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe', 'place'],
