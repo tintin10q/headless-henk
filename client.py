@@ -33,7 +33,7 @@ class Client:
     """
     __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected'
 
-    place_delay = 5
+    place_delay = 7
 
     def __init__(self, config: Config = None):
         if config is None:
