@@ -458,7 +458,11 @@ class Client:
         printc(f"{self.now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
 
     @staticmethod
-    async def run_client(client: "Client"):
+    async def run_client(client: "Client", delay: int = None):
+        if isinstance(delay, int) and delay > -1:
+            delay += random.randint(0, 15)
+            print(f"{now_usr(client.config.reddit_username)} Starting {client.config.reddit_username or 'client'} in {delay} seconds")
+            await asyncio.sleep(delay)
         while True:
             try:
                 await client.connect()
