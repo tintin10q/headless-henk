@@ -78,7 +78,7 @@ def download_and_save_canvas():
     asyncio.get_event_loop().run_until_complete(go())
 
 
-def xy_to_canvasIndex(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
+def xy_to_canvas_index(x: int, y: int) -> Literal[0, 1, 2, 3, 4, 5]:
     if x < 1000 and y < 1000:
         return 0
     elif 1000 <= x < 2000 and y < 1000:
@@ -114,12 +114,12 @@ color_names = ['N/A - #6D001A', 'N/A - #BE0039', 'Red', 'Orange', 'Yellow', 'N/A
                'N/A - #E4ABFF', 'N/A - #DE107F', 'N/A - #FF3881', 'Light pink', 'N/A - #6D482F', 'Brown', 'N/A - #FFB470', 'Black', 'N/A - #515252', 'Gray', 'Light gray', 'White']
 
 
-def colorIndex_to_name(colorIndex: int) -> str:
-    return color_names[colorIndex]
+def color_index_to_name(color_index: int) -> str:
+    return color_names[color_index]
 
 
-def colorTuple_to_colorIndex(colorTuple: Tuple[int, int, int, int]) -> int:
-    hexcode = rgba_to_hex(colorTuple)
+def color_tuple_to_color_index(color_tuple: Tuple[int, int, int, int]) -> int:
+    hexcode = rgba_to_hex(color_tuple)
     return valid_color_codes.index(hexcode)
 
 

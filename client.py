@@ -18,7 +18,7 @@ from colors import *
 from now import now_usr
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
-
+from images import ImageDiff
 
 R = RESET
 
@@ -76,7 +76,8 @@ class Client:
         self.place_timer.daemon = True
         self.place_timer.start()
 
-        printc(f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
+        printc(
+            f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
 
         async with websockets.connect(self.uri) as websocket:
             # Send a sample 'brand' message to the server
@@ -101,23 +102,34 @@ class Client:
 
         if not self.order_image:
             print(f"{self.now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
-            self.order_image = loop2.run_until_complete(images.download_order_image(self.current_order.images.order, save_images=self.config.save_images, username=self.config.reddit_username))
+            self.order_image = loop2.run_until_complete(
+                images.download_order_image(self.current_order.images.order, save_images=self.config.save_images,
+                                            username=self.config.reddit_username))
 
         try:
             self.differences = loop2.run_until_complete(
-                images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image, save_images=self.config.save_images,
+                images.get_pixel_differences_with_canvas_download(order=self.current_order,
+                                                                  canvas_indexes=self.config.canvas_indexes,
+                                                                  order_image=self.order_image,
+                                                                  priority_image=self.priority_image,
+                                                                  save_images=self.config.save_images,
                                                                   username=self.config.reddit_username))
         except (asyncio.CancelledError, asyncio.TimeoutError):
             print(f"{self.now()} {YELLOW}Timed while getting differences trying one more time!")
             try:
                 self.differences = loop2.run_until_complete(
-                    images.get_pixel_differences_with_canvas_download(order=self.current_order, canvas_indexes=self.config.canvas_indexes, order_image=self.order_image, priority_image=self.priority_image,
-                                                                      save_images=self.config.save_images, username=self.config.reddit_username))
+                    images.get_pixel_differences_with_canvas_download(order=self.current_order,
+                                                                      canvas_indexes=self.config.canvas_indexes,
+                                                                      order_image=self.order_image,
+                                                                      priority_image=self.priority_image,
+                                                                      save_images=self.config.save_images,
+                                                                      username=self.config.reddit_username))
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 print(f"{self.now()} {YELLOW}Timed out while differences again! Giving up!")
                 self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
                 self.place_timer.daemon = True
-                print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
+                print(
+                    f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
                 self.place_timer.start()
                 return
 
@@ -129,7 +141,8 @@ class Client:
         if not self.differences:
             print(f"{self.now()} {LIGHTGREEN}No pixels have to be placed 🥳{R}")
 
-            print(f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{Client.place_delay}{LIGHTGREEN} seconds!{R}")
+            print(
+                f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.daemon = True
@@ -139,8 +152,8 @@ class Client:
         # Check if we have priority, otherwise pick a random pixel and place it
         random_index = random.randrange(len(self.differences))
 
-        def weighted_sort(difference):
-            return difference[4]
+        def weighted_sort(diff: ImageDiff):
+            return diff.priority
 
         if self.priority_image:
             random_index = 0
@@ -148,8 +161,8 @@ class Client:
 
         difference = self.differences[random_index]
 
-        x, y = difference[0], difference[1]
-        canvasIndex = canvas.xy_to_canvasIndex(x, y)
+        x, y = difference.x, difference.y
+        canvasIndex = canvas.xy_to_canvas_index(x, y)
 
         if canvasIndex is None:
             printc(RED, f"{self.now()}Canvas index is None!!!, x={x}, y={y}")
@@ -163,17 +176,17 @@ class Client:
 
         coords = reddit.Coordinates(x, y, canvasIndex)
 
-        colorTuple = difference[3]
-        colorIndex = canvas.colorTuple_to_colorIndex(colorTuple)
+        colorTuple = difference.template_pixel
+        colorIndex = canvas.color_tuple_to_color_index(colorTuple)
 
         print(f"{self.now()} {GREEN}Difference:{RESET}", difference)
 
         hex_color = canvas.rgba_to_hex(colorTuple)
-        color_name = canvas.colorIndex_to_name(colorIndex)
+        color_name = canvas.color_index_to_name(colorIndex)
         print(f"{self.now()} {GREEN}HEX {RESET}{hex_color}, {GREEN}which is {RESET}{color_name}")
 
         print(
-            f"{self.now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel with weight={YELLOW}{difference[4]}{GREEN} at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex}, {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
+            f"{self.now()} {GREEN}Placing {RESET}{color_name}{GREEN} pixel with weight={YELLOW}{difference.priority}{GREEN} at x={AQUA}{x_ui}{GREEN}, y={AQUA}{y_ui}{GREEN} on the canvas {AQUA}{canvasIndex}, {RED}H{GREEN}Y{YELLOW}P{BLUE}E{PURPLE}!{R}")
 
         login.refresh_token_if_needed(self.config)
 
@@ -183,11 +196,13 @@ class Client:
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
-        print(f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
+        print(
+            f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
         self.place_timer.daemon = True
-        print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
+        print(
+            f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
     async def receive_messages(self):
@@ -257,7 +272,9 @@ class Client:
         brand = self.config.get_brand_payload()
         await self.send_message('brand', brand)
 
-    async def send_message(self, message_type: Literal['pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe'], payload=None):
+    async def send_message(self, message_type: Literal[
+        'pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe'],
+                           payload=None):
         message = {'type': message_type}
 
         if payload is not None:
@@ -286,7 +303,8 @@ class Client:
         # Todo remove with : {payload}
 
         if message_type != 'ping' or self.config.pingpong:
-            print(BLUE + f"{self.now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
+            print(
+                BLUE + f"{self.now()} {BLUE}Received message: {R}{GREEN}{message_type}{R}")  # with: {R}{PURPLE}{payload}{R}")
         match message_type:
             case 'ping':
                 await self.handle_ping()
@@ -337,9 +355,13 @@ class Client:
 
         print(f"{self.now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
-        await gather(self.send_brand(), self.send_getStats(), self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability(), self.send_enable_priorityMappings_capability())
+        await gather(self.send_brand(), self.send_getStats(),
+                     self.send_getOrder() if self.can_place else asyncio.sleep(1), self.send_enable_place_capability(),
+                     self.send_enable_priorityMappings_capability())
 
-        await gather(self.subscribe_to_announcements(), self.subscribe_to_orders() if self.can_place else asyncio.sleep(1), self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
+        await gather(self.subscribe_to_announcements(),
+                     self.subscribe_to_orders() if self.can_place else asyncio.sleep(1),
+                     self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
 
     async def handle_ping(self):
         if not (self.pong_timer and not self.pong_timer.finished):
@@ -359,8 +381,10 @@ class Client:
     def handle_stats(self, payload: dict):
         match payload:
 
-            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn), "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections),
-                  "capabilities": {'place': int(place), 'placeNow': int(placenow), 'priorityMappings': int(priorityMappings)}}:
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn),
+                  "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections),
+                  "capabilities": {'place': int(place), 'placeNow': int(placenow),
+                                   'priorityMappings': int(priorityMappings)}}:
                 dt_object = datetime.datetime.fromtimestamp(date / 999)
                 nice_date = dt_object.strftime('%Y %b %d %H:%M:%S')
                 print(f"""{PURPLE}--== Server Stats ==--
@@ -374,7 +398,8 @@ class Client:
 {GREEN}Able to place now: {AQUA}{placenow}/{activeConnections}{RESET}
 {GREEN}Understands priority mappings: {AQUA}{priorityMappings}/{activeConnections}{RESET}
                 """)
-            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn), "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections)}:
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn),
+                  "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections)}:
                 dt_object = datetime.datetime.fromtimestamp(date / 1000)
                 nice_date = dt_object.strftime('%Y-%d %H:%M:%S')
                 print(f"""{PURPLE}--== Stats ==--
@@ -398,12 +423,16 @@ class Client:
         self.pong_timer.start()
 
         # download the order image
-        self.order_image = await images.download_order_image(self.current_order.images.order, save_images=self.config.save_images, username=self.config.reddit_username)
+        self.order_image = await images.download_order_image(self.current_order.images.order,
+                                                             save_images=self.config.save_images,
+                                                             username=self.config.reddit_username)
         print(f"{self.now()} {GREEN} Downloaded order image{R}")
 
         # download the priority map
         if self.current_order.images.priority:
-            self.priority_image = await images.download_priority_image(self.current_order.images.priority, save_images=self.config.save_images, username=self.config.reddit_username)
+            self.priority_image = await images.download_priority_image(self.current_order.images.priority,
+                                                                       save_images=self.config.save_images,
+                                                                       username=self.config.reddit_username)
         else:
             self.priority_image = None  # to avoid having an older priority map
 
@@ -411,7 +440,8 @@ class Client:
         login.refresh_token_if_needed(self.config)
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
 
-        printc(f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
+        printc(
+            f"{self.now()} {GREEN}Placing pixel in {AQUA}{self.place_cooldown + Client.place_delay}{RESET} {GREEN}seconds")
 
         # Stop the pong timer
         self.pong_timer.cancel()
@@ -422,8 +452,9 @@ class Client:
     def handle_announcement(payload):
         match payload:
             case {"message": str(message), "important": important}:
-                print(f"\n{LIGHTPURPLE}{PURPLE_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
-                      f"\n{now_usr()} {message}\n")
+                print(
+                    f"\n{LIGHTPURPLE}{PURPLE_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
+                    f"\n{now_usr()} {message}\n")
             case _:
                 print(now_usr(), "Got announcement but couldn't parse it...🤔")
                 pprint(payload)
@@ -470,20 +501,23 @@ class Client:
     async def run_client(client: "Client", delay: int = None):
         if isinstance(delay, int) and delay > -1:
             delay += random.randint(0, 15)
-            print(f"{now_usr(username=client.config.reddit_username)} {GREEN}Starting {AQUA}{client.config.reddit_username or f'{GREEN}client'}{GREEN} in {AQUA}{delay}{AQUA}{GREEN} seconds{R}")
+            print(
+                f"{now_usr(username=client.config.reddit_username)} {GREEN}Starting {AQUA}{client.config.reddit_username or f'{GREEN}client'}{GREEN} in {AQUA}{delay}{AQUA}{GREEN} seconds{R}")
             await asyncio.sleep(delay)
         while True:
             try:
                 await client.connect()
             except (TimeoutError, asyncio.exceptions.TimeoutError):
-                print(f"{now_usr(client.config.reddit_username)} We got disconnected. Lets try connect again in 4 seconds")
+                print(
+                    f"{now_usr(client.config.reddit_username)} We got disconnected. Lets try connect again in 4 seconds")
                 if client.place_timer:
                     client.place_timer.cancel()
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 time.sleep(4)
             except (websockets.InvalidStatusCode):
-                print(f"{now_usr(client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")
+                print(
+                    f"{now_usr(client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")
                 if client.place_timer:
                     client.place_timer.cancel()
                 if client.pong_timer:
@@ -502,7 +536,8 @@ class Client:
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 if client.config.reddit_username:
-                    print(f"{now_usr(client.config.reddit_username)} {client.config.reddit_username} can not place pixels")
+                    print(
+                        f"{now_usr(client.config.reddit_username)} {client.config.reddit_username} can not place pixels")
                 else:
                     print(f"{now_usr(client.config.reddit_username)} This account can not place pixels")
                 return
@@ -512,7 +547,8 @@ class Client:
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 if client.config.reddit_username:
-                    print(f"{now_usr(client.config.reddit_username)} Could not refresh token for {client.config.reddit_username} stopping")
+                    print(
+                        f"{now_usr(client.config.reddit_username)} Could not refresh token for {client.config.reddit_username} stopping")
                 else:
                     print(f"{now_usr(client.config.reddit_username)} Could not refresh token for this account")
                 return
