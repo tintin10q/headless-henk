@@ -509,7 +509,7 @@ class Client:
                 await client.connect()
             except (TimeoutError, asyncio.exceptions.TimeoutError):
                 print(
-                    f"{now_usr(client.config.reddit_username)} We got disconnected. Lets try connect again in 4 seconds")
+                    f"{now_usr(username=client.config.reddit_username)} We got disconnected. Lets try connect again in 4 seconds")
                 if client.place_timer:
                     client.place_timer.cancel()
                 if client.pong_timer:
@@ -517,14 +517,14 @@ class Client:
                 time.sleep(4)
             except (websockets.InvalidStatusCode):
                 print(
-                    f"{now_usr(client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")
+                    f"{now_usr(username=client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")
                 if client.place_timer:
                     client.place_timer.cancel()
                 if client.pong_timer:
                     client.pong_timer.cancel()
                 time.sleep(10)
             except (websockets.WebSocketException):
-                print(f"{now_usr(client.config.reddit_username)} Websocket error. Lets try connect again in 10 seconds")
+                print(f"{now_usr(username=client.config.reddit_username)} Websocket error. Lets try connect again in 10 seconds")
                 if client.place_timer:
                     client.place_timer.cancel()
                 if client.pong_timer:
@@ -537,9 +537,9 @@ class Client:
                     client.pong_timer.cancel()
                 if client.config.reddit_username:
                     print(
-                        f"{now_usr(client.config.reddit_username)} {client.config.reddit_username} can not place pixels")
+                        f"{now_usr(username=client.config.reddit_username)} {client.config.reddit_username} can not place pixels")
                 else:
-                    print(f"{now_usr(client.config.reddit_username)} This account can not place pixels")
+                    print(f"{now_usr(username=client.config.reddit_username)} This account can not place pixels")
                 return
             except (login.CouldNotRefreshToken):
                 if client.place_timer:
@@ -548,9 +548,9 @@ class Client:
                     client.pong_timer.cancel()
                 if client.config.reddit_username:
                     print(
-                        f"{now_usr(client.config.reddit_username)} Could not refresh token for {client.config.reddit_username} stopping")
+                        f"{now_usr(username=client.config.reddit_username)} Could not refresh token for {client.config.reddit_username} stopping")
                 else:
-                    print(f"{now_usr(client.config.reddit_username)} Could not refresh token for this account")
+                    print(f"{now_usr(username=client.config.reddit_username)} Could not refresh token for this account")
                 return
             else:  # If another error happened then just let it die
                 break
