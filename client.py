@@ -31,7 +31,7 @@ class Client:
 
     """
 
-    place_delay = 10
+    place_delay = 5
 
     def __init__(self, config: Config = None):
         if config is None:
