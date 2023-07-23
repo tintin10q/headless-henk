@@ -1,6 +1,7 @@
 import asyncio
 from typing import List, Literal
 
+import PIL.Image
 import httpx
 from io import BytesIO
 from PIL import Image
@@ -22,7 +23,7 @@ async def download_order_image(url: str, save_images: bool = default_save_images
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
 
-    order_img = Image.open(BytesIO(response.content))
+    order_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         order_img.save("chieftemplate.png")
     return order_img
@@ -34,7 +35,7 @@ async def download_priority_image(url: str, save_images: bool = default_save_ima
         response = await client.get(url, timeout=2 * 60)
     response.raise_for_status()
 
-    priority_img = Image.open(BytesIO(response.content))
+    priority_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         priority_img.save("prioritymap.png")
     return priority_img
@@ -140,8 +141,8 @@ def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
 
 def get_pixel_differences(canvas: Image, chief_template: Image) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     """ This one is just for testing, use save_images config to save the images, and then you can load them into this """
-    template_width, template_height = 2000, 1000
-    offsetX, offsetY = -1000, -500
+    template_width, template_height = 2000, 1500
+    offsetX, offsetY = -1000, -1000
 
     diff_pixels = []
 
@@ -189,3 +190,9 @@ def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, t
                 case ((0, 0, 0, 255), 1) | ((255, 168, 0, 255), 4) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255), 6 ) | ((36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
                     continue
     return differences
+
+
+if __name__ == '__main__':
+    canvas = PIL.Image.open("canvas.png")
+    chief = PIL.Image.open('chieftemplate.png').convert("RGBA")
+    print(len(get_pixel_differences(canvas, chief)))
