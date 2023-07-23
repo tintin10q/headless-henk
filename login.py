@@ -75,7 +75,11 @@ def get_reddit_token(username: str, password: str) -> str | None:
     printc(f"{now()} {GREEN}Getting {RED}reddit{GREEN} access token...")
     r = s.get(REDDIT_URL)
     soup = BeautifulSoup(r.content, features="html.parser")
-    data_str = soup.find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
+    try:
+        data_str = soup.find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]
+    except AttributeError:
+        printc(f"{now()} {RED}Login failed! Reddit did not return what we needed. It could help to set your reddit to the new ui")
+        return None
     data = json.loads(data_str)
     token = 'Bearer ' + data["user"]["session"]["accessToken"]
 
