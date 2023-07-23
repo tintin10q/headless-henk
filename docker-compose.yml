@@ -6,8 +6,7 @@ services:
     labels:
       - "com.centurylinklabs.watchtower.scope=headless-henkies"
     volumes:
-      - ./config:/config
-    command: "--config=/config/config.toml"
+      - ./accounts.toml:/workdir/accounts.toml
   watchtower:
     image: containrrr/watchtower
     volumes:
