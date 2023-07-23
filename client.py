@@ -19,8 +19,6 @@ from now import now_usr
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
 
-import atexit
-
 
 R = RESET
 
