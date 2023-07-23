@@ -72,22 +72,35 @@ class Config:
 
 __config = None
 
+def create_file_if_it_doesnt_exit(filename:str):
+    if not os.path.exists(tokens_cachepath):
+        # Create the file if not there yet
+        with open(tokens_cachepath, "w+"):
+            pass
+
 
 def load_tokens_cache_toml() -> dict:
     """ The tokens.toml file is a mapping from usernames to account tokens, this is a cache
     It should be username: token keys, please include bearer in the token
     """
+    create_file_if_it_doesnt_exit(tokens_cachepath)
 
     with open(tokens_cachepath, "r+") as tokens_cachefile:
         return toml.load(tokens_cachefile)
 
 
 def cache_auth_token(*, username: str, token: str):
+
+    create_file_if_it_doesnt_exit(tokens_cachepath)
+
     with open(tokens_cachepath, "r+") as tokens_cachefile:
         tokens_cache = toml.load(tokens_cachefile)
+
     tokens_cache[username] = token
+
     with open(tokens_cachepath, "r+") as tokens_cachefile:
         toml.dump(tokens_cachefile, tokens_cache)
+
     print(f"{now()} {GREEN}Cached reddit token for {AQUA}{username}{RESET}")
 
 

@@ -15,7 +15,7 @@ import login
 
 
 async def run_with_accounts_toml():
-    print(f"{now()} {GREEN}Detected {accountsfilepath}")
+    print(f"{now()} {GREEN}Detected {AQUA}{accountsfilepath}{RESET}")
 
     accounts = load_accounts()
     configs = []
