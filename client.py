@@ -390,6 +390,7 @@ class Client:
         """
         This function should do everything we want to do after we know the connection is here.
 
+        0. Set connected to true
         1. Set the brand
         2. Set capabilities
         3. Get the orders
@@ -408,6 +409,9 @@ class Client:
         await gather(self.subscribe_to_announcements(),
                      self.subscribe_to_orders() if self.can_place else asyncio.sleep(1),
                      self.subscribe_to_stats() if self.config.stats else asyncio.sleep(1))
+
+        # If we get here we can assume we are connected to Chief
+        self.connected = True
 
     async def handle_ping(self):
         if not (self.pong_timer and not self.pong_timer.finished):
