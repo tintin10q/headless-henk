@@ -19,6 +19,7 @@ from now import now_usr
 from parse_order import parse_order, Order, Image
 from config import Config, load_config
 from images import ImageDiff
+
 R = RESET
 
 
@@ -564,7 +565,7 @@ class Client:
                 client.connected = False
                 if client.pong_timer:
                     client.pong_timer.cancel()
-                time.sleep(60) # Longer to give Chief time to restart
+                time.sleep(60)  # Longer to give Chief time to restart
             except (websockets.InvalidStatusCode):
                 print(
                     f"{now_usr(username=client.config.reddit_username)} Server rejected connection. Lets try connect again in 10 seconds")

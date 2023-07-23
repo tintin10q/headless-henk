@@ -22,6 +22,7 @@ accountsfilepath = args.accounts
 tokens_cachepath = args.tokens_cache
 
 
+# Dit is alleen maar een type
 class Brand(TypedDict):
     author: str
     version: str
