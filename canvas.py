@@ -38,10 +38,15 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
 
     canvas_parts = {}
 
+    get_canvas_coroutines = []
     for i, image_id in enumerate(image_ids):
         if image_id is not None:
-            canvas_part = await get_canvas_part(image_id, username=username)
-            canvas_parts[i] = canvas_part
+            async def get_canvas_i():
+                canvas_part = await get_canvas_part(image_id, username=username)
+                canvas_parts[i] = canvas_part
+            get_canvas_coroutines.append(get_canvas_i())
+
+    await asyncio.gather(*get_canvas_coroutines)
 
     # Calculate the size of the final canvas image.
     final_canvas_width = 3000
