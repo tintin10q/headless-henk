@@ -15,11 +15,13 @@ parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headl
 parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
 parser.add_argument('--accounts', help="Location of the toml accounts file", default='accounts.toml')
 parser.add_argument('--tokens_cache', help="Location of the toml tokens_cache file", default='tokens_cache.toml')
+parser.add_argument('--ratelimitreportfile', help="Location of the ratelimitreport file", default='ratelimitreports/rate_limit_report.txt')
 args = parser.parse_args()
 
 configfilepath = args.config
 accountsfilepath = args.accounts
 tokens_cachepath = args.tokens_cache
+ratelimitreportpath = args.ratelimitreportfile
 
 
 # Dit is alleen maar een type
@@ -52,7 +54,7 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '3.2.0'
+    version: str = '3.3.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
@@ -73,7 +75,8 @@ class Config:
 
 __config = None
 
-def create_file_if_it_doesnt_exit(filename:str):
+
+def create_file_if_it_doesnt_exit(filename: str):
     if not os.path.exists(tokens_cachepath):
         # Create the file if not there yet
         with open(tokens_cachepath, "w+"):
@@ -91,7 +94,6 @@ def load_tokens_cache_toml() -> dict:
 
 
 def cache_auth_token(*, username: str, token: str):
-
     create_file_if_it_doesnt_exit(tokens_cachepath)
 
     with open(tokens_cachepath, "r+") as tokens_cachefile:

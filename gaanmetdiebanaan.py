@@ -1,12 +1,8 @@
 import os.path
 import random
-import time
 
-import websockets
-
-import reddit
 from client import Client
-from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE
+from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE, WHITE
 from config import load_config, load_accounts, load_tokens_cache_toml, accountsfilepath, load_config_without_auth_without_cache, cache_auth_token
 import asyncio
 
@@ -32,7 +28,7 @@ async def run_with_accounts_toml():
         # Check if we have a valid token in the cache
         if config.reddit_username in tokens_cache:
             config.auth_token = tokens_cache[config.reddit_username]
-            print(f"{now()} {GREEN} Using cached reddit token for {AQUA}{account.reddit_username}", RESET)
+            print(f"{now()} {GREEN}Using cached reddit token for {AQUA}{account.reddit_username}", RESET)
             expires_at = login.decode_jwt_and_get_expiry(config.auth_token)
             if login.is_expired(expires_at):
                 print(f"{now()} {YELLOW}Cached token for {AQUA}{account.reddit_username}{YELLOW} is expired fetching a new one", RESET)
@@ -75,6 +71,7 @@ async def metdiebanaan():
         await run_with_accounts_toml()
     else:
         config = load_config()
+        print(f"{WHITE}Henk {AQUA}V{config.version}{RESET}")
         # make client
         client = Client(config)
         await Client.run_client(client)

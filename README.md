@@ -28,7 +28,8 @@ windows [use this guide](https://www.geeksforgeeks.org/how-to-install-docker-on-
 
 If you have trouble running the docker check out Run Henk with Poetry below. That method is also pretty easy.
 
-> This login method does not work with accounts with 2 factor authentication, disable it. If you have 2fa use the `auth_token` config.
+> This login method does not work with accounts with 2 factor authentication, disable it. If you have 2fa use
+> the `auth_token` config.
 
 # Runnning Henk
 
@@ -56,6 +57,8 @@ If you don't have [poetry](https://python-poetry.org/docs/) then install it with
 If you have problems with poetry just delete `poetry.lock` and try again.
 
 **Again, you start the client with `poetry run gaanmetdiebanaan`**
+
+After you run the installation script you still have to add poetry to your path.
 
 ## Run Henk with Docker
 
@@ -98,6 +101,8 @@ use an `accounts.toml`.**
 
 - You can configure the name of the `accounts.toml` with the `--accounts` flag.
 - You can configure the name of the `config.toml` with the `--config` flag.
+- You can configure the name of the `token_cache.toml` with the `--tokens_cache` flag.
+- You can configure the name of the `rate_limit_report.txt` with the  `--ratelimitreportfile` flag.
 
 ## Accounts Toml File
 
@@ -201,7 +206,8 @@ export PLACENL_PINGPONG="false"
 export PLACENL_SAVE_IMAGES="false"
 ```
 
-If an `accounts.toml` file is present the contents of `PLACENL_REDDIT_PASSWORD`,  `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_AUTH_TOKEN` env vars are ignored.
+If an `accounts.toml` file is present the contents of `PLACENL_REDDIT_PASSWORD`,  `PLACENL_REDDIT_USERNAME`
+and `PLACENL_REDDIT_AUTH_TOKEN` env vars are ignored.
 
 # How to get reddit jwt?
 
@@ -236,6 +242,23 @@ If the login does it work
 
 **Be sure to not share this jwt with others! It is basically the same as sharing your password!**
 
+# Using a proxy
+
+To you a proxy you can define the following standard environment vars http_proxy, https_proxy, no_proxy, and all_proxy.
+Uppercase variants of these variables are also supported.
+
+```
+export http_proxy="http://10.10.1.10:3128"
+export https_proxy="http://10.10.1.10:1080"
+export all_proxy="socks5://10.10.1.10:3434"
+```
+
+You can put auth you want to use in the url like this: `http://user:password@10.10.1.10:1080`.
+
+For more infromation see [requests proxy docs](https://requests.readthedocs.io/en/latest/user/advanced/#proxies)
+and [httpx proxy docs](https://www.python-httpx.org/advanced/#http-proxying)
+
+
 # Downloading the Canvas
 
 As a bonus feature you can run
@@ -246,6 +269,11 @@ poetry run downloadcanvas
 
 to download the canvas. You don't have to put your auth token in `config.toml` or create an `acounts.toml` for this to
 work.
+
+# Shwowing number of auto placers 
+
+```poetry run counter```
+
 
 <br>
 <br>

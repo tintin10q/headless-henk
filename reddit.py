@@ -1,23 +1,65 @@
 import os
 from copy import copy
+from datetime import datetime
 from pprint import pprint
 from typing import Literal
 from urllib.parse import urlparse
 
-import httpx
 import ojson
 import ojson as json
 import requests
 import websockets
 
-from colors import GREEN, printc, RESET, RED, AQUA
-from config import Config, load_config_without_auth
+from colors import GREEN, printc, RESET, RED, AQUA, YELLOW, LIGHTAQUA, PURPLE
+from config import Config, load_config_without_auth, ratelimitreportpath
 
 from dataclasses import dataclass
 
 import time
 
 from now import now, now_usr
+
+from collections import defaultdict
+import pathlib
+
+import atexit
+
+rate_limited_usernames = defaultdict(int)
+rate_limit_limit = 2
+
+
+def show_ratelimited_acocunts():
+    if rate_limited_usernames:
+        print()
+        print(f"{PURPLE}== Rate Limit Report =={RESET}")
+        print(f"{YELLOW}Accounts are stopped after being rate limited {rate_limit_limit} times")
+        print(f"{YELLOW}These accounts got rate limited:{RESET}")
+        for index, (username, ratelimit_count) in enumerate(rate_limited_usernames.items()):
+            print(f"{GREEN}- {AQUA if index % 2 == 0 else LIGHTAQUA}{username}{GREEN}, rate limited {AQUA}{ratelimit_count}{GREEN} times{RESET}")
+    else:
+        print(f"{GREEN}No accounts were rate limited!{RESET}")
+    write_ratelimitreport_to_file()
+
+
+def write_ratelimitreport_to_file(filename=ratelimitreportpath):
+    filepath = pathlib.Path(filename)
+    filepath = filepath.parent.joinpath((date_str() + filepath.name))
+
+    if rate_limited_usernames:
+        filename = date_str() + filename
+        print(f"{now()} {GREEN}Writing rate limit report to {filename}{RESET}")
+        with open(filepath, 'w+') as ratelimitreportfile:
+            print(f"== Rate Limit Report ==", file=ratelimitreportfile)
+            print(f"Accounts were stopped after being rate limited {rate_limit_limit} times", file=ratelimitreportfile)
+            print("These accounts might have gotten rate limited:", file=ratelimitreportfile)
+            for index, (username, ratelimit_count) in enumerate(rate_limited_usernames.items()):
+                print(f"- {username}, rate limited {ratelimit_count} times", file=ratelimitreportfile)
+    else:
+        with open(filepath, 'w+') as ratelimitreportfile:
+            print("No accounts were rate limited!", file=ratelimitreportfile)
+
+
+atexit.register(show_ratelimited_acocunts)
 
 
 @dataclass
@@ -46,8 +88,6 @@ def ui_to_req_coords(displayX, displayY) -> Coordinates:
             canvas = 4
     return Coordinates(canvasX, canvasY, canvas)
 
-
-colorIndex = 3
 
 VALID_COLORS = ['#6D001A', '#BE0039', '#FF4500', '#FFA800', '#FFD635', '#FFF8B8', '#00A368', '#00CC78', '#7EED56', '#00756F', '#009EAA', '#00CCC0', '#2450A4', '#3690EA', '#51E9F4', '#493AC1', '#6A5CFF', '#94B3FF', '#811E9F', '#B44AC0',
                 '#E4ABFF', '#DE107F', '#FF3881', '#FF99AA', '#6D482F', '#9C6926', '#FFB470', '#000000', '#515252', '#898D90', '#D4D7D9', '#FFFFFF'];
@@ -88,6 +128,37 @@ def place_pixel(config: Config, coords: Coordinates, color=3):
     print(f"set pixel response:{AQUA}")
     pprint(set_pixel.text)
     print(RESET)
+    if "error" in set_pixel.text:
+        print(f"{now_usr(username=config.reddit_username)} {RED}Got error in setPixel response!{RESET}")
+        if 'Ratelimited' in set_pixel.text:
+            print(f"{now_usr(username=config.reddit_username)} {RED}The error is a rate limit error, {AQUA}{config.reddit_username}{RED} might not work anymore!{RESET}")
+            rate_limited_usernames[config.reddit_username] += 1
+            if rate_limited_usernames[config.reddit_username] > rate_limit_limit:
+                raise RateLimitLimitReached(f"Rate limited more than {rate_limit_limit} times", rate_limit_times=rate_limited_usernames[config.reddit_username])
+            else:
+                raise RateLimitReached(f"{config.reddit_username} got rate limited", rate_limit_times=rate_limited_usernames[config.reddit_username])
+
+
+class RateLimitLimitReached(Exception):
+    """ Raise this if you want the client to stop """
+
+    def __init__(self, *args, rate_limit_times: int):
+        super().__init__(*args)
+        self.rate_limit_times = rate_limit_times
+
+
+class RateLimitReached(Exception):
+    """ Raise this if you want the client to let the client know a rate limit happened and when the next pixel is available """
+
+    def __init__(self, *args, rate_limit_times: int):
+        super().__init__(*args)
+        self.rate_limit_times = rate_limit_times
+
+
+def date_str() -> str:
+    now = datetime.now()
+    formatted_date = now.strftime("%Y-%m-%d_%H:%M:%S")
+    return formatted_date
 
 
 # return data.data.act.data.find((e) => e.data.__typename === 'GetUserCooldownResponseMessageData').data.nextAvailablePixelTimestamp;
@@ -210,20 +281,20 @@ class LiveCanvas:
                 print("GOT:", message)
 
 
-def get_place_cooldown(authorization: str) -> int:
+def get_place_cooldown(authorization: str, *, username: str = None) -> int:
     """
     If this is 0 there is no cooldown
     :param authorization:
     :return:
     """
-    next_time = get_nextAvailablePixelTimestamp(authorization)
+    next_time = get_nextAvailablePixelTimestamp(authorization, username=username)
     if next_time is None:
         return 1  # 1 second just in case
     diff = next_time - time.time()
     return int(max((diff, 1)))
 
 
-def get_nextAvailablePixelTimestamp(authorization: str) -> int | None:
+def get_nextAvailablePixelTimestamp(authorization: str, *, username: str = None) -> int | None:
     if not authorization:
         return None
 
@@ -265,6 +336,7 @@ mutation GetPersonalizedTimer{
     # print(response.status_code, response.text)
 
     data = response.json()
+    print(f"{now_usr(username=username)} {GREEN}Cooldown data response: {AQUA}{data}{RESET}")
 
     if not data.get('data'):
         return None

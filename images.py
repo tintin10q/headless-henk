@@ -36,6 +36,8 @@ async def download_order_image(url: str, save_images: bool = default_save_images
     order_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         order_img.save("chieftemplate.png")
+    # apparently this is good for memory
+    await asyncio.sleep(0)
     return order_img
 
 
@@ -48,6 +50,8 @@ async def download_priority_image(url: str, save_images: bool = default_save_ima
     priority_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         priority_img.save("prioritymap.png")
+    # apparently this is good for memory
+    await asyncio.sleep(0)
     return priority_img
 
 
@@ -92,6 +96,13 @@ async def get_pixel_differences_with_download(order: Order, canvas_indexes: List
 
     del canvas, chief_template
     return diff_pixels
+
+
+def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
+    r, g, b, a = pixel
+    if a == 0:
+        return 0
+    return (r << 16) + (g << 8) + b
 
 
 async def get_pixel_differences_with_canvas_download(order: Order,
@@ -149,11 +160,32 @@ async def get_pixel_differences_with_canvas_download(order: Order,
     return diff_pixels
 
 
-def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
-    r, g, b, a = pixel
-    if a == 0:
-        return 0
-    return (r << 16) + (g << 8) + b
+def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height,
+                                      offset_x, offset_y) -> List[
+    Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+    """ This does not work yet, lets hope they don't upload a 4 bit image again """
+    differences = []
+    last = -1
+    for x in range(template_width):
+        for y in range(template_height):
+
+            template_pixel = chief_template.getpixel((x, y))
+
+            canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
+
+            if template_pixel not in (12,):
+                print((canvas_pixel, template_pixel))
+            if template_pixel != last:
+                print(template_pixel)
+                last = template_pixel
+
+            canvas_pixel = 3
+            match (canvas_pixel, template_pixel):
+                case ((0, 0, 0, 255), 1) | ((255, 168, 0, 255), 4) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255),
+                                                                                                  6 ) | (
+                         (36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
+                    continue
+    return differences
 
 
 def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[
@@ -185,34 +217,6 @@ def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str
     del canvas, chief_template
 
     return diff_pixels
-
-
-def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height,
-                                      offset_x, offset_y) -> List[
-    Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
-    """ This does not work yet, lets hope they don't upload a 4 bit image again """
-    differences = []
-    last = -1
-    for x in range(template_width):
-        for y in range(template_height):
-
-            template_pixel = chief_template.getpixel((x, y))
-
-            canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
-
-            if template_pixel not in (12,):
-                print((canvas_pixel, template_pixel))
-            if template_pixel != last:
-                print(template_pixel)
-                last = template_pixel
-
-            canvas_pixel = 3
-            match (canvas_pixel, template_pixel):
-                case ((0, 0, 0, 255), 1) | ((255, 168, 0, 255), 4) | ((255, 214, 53, 255), 5) | ( (54, 144, 234, 255),
-                                                                                                  6 ) | (
-                         (36, 80, 164, 255), 7) | ((255, 153, 170, 255), 12):
-                    continue
-    return differences
 
 
 if __name__ == '__main__':

@@ -32,7 +32,7 @@ class Client:
     Its simple, we receive messages in receive_message and then the handle_message function handles them.
 
     """
-    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected'
+    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected', 'rate_limited'
 
     place_delay = 7
 
@@ -63,6 +63,9 @@ class Client:
 
         self.priority_image: Image | None = None
         self.order_image: Image | None = None
+
+        # Set this to the number (or just true) it was rate limited to throw reddit.RateLimitLimitReached when the next ping message comes in
+        self.rate_limited: int = False
 
     async def connect(self):
         printc(f"{self.now()} {GREEN}Checking reddit token...")
@@ -97,7 +100,7 @@ class Client:
         printc(f"{self.now()} {AQUA}== Starting to place pixel =={RESET}")
 
         if not self.id:  # this may be out of date after a disconnect.
-            print(f"{self.now()} {GREEN}Never yet connected to chief trying again in {Client.place_delay} seconds")
+            print(f"{self.now()} {GREEN}Never yet connected to chief (we dont have an id yet!) trying again in {Client.place_delay} seconds")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.daemon = True
             self.place_timer.start()
@@ -147,7 +150,7 @@ class Client:
                 self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
                 self.place_timer.daemon = True
                 print(
-                    f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
+                    f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
                 self.place_timer.start()
                 return
 
@@ -215,7 +218,24 @@ class Client:
         else:
             print(f"{self.now()} {YELLOW}The client is currently not connected to chief. Not sending placeNOW capability{STOP}")
 
-        reddit.place_pixel(self.config, coords, colorIndex)
+        try:
+            # actually place pixel
+            reddit.place_pixel(self.config, coords, colorIndex)
+        except reddit.RateLimitReached:
+            if actually_send_place_now:  # still disable this if it was enabled, do not send coords!
+                loop2.run_until_complete(self.send_disable_placeNOW_capability())
+            self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
+            self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
+            self.place_timer.daemon = True
+            print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{GREEN} (not sending coords because the rate limit was hit)")
+            self.place_timer.start()
+            return
+
+        except reddit.RateLimitLimitReached as e:
+            self.rate_limited = e.rate_limit_times
+            print(f"{self.now()} {RED} Rate limit limit reached! Not starting new pixel timer for {self.config.reddit_username}. {GREEN}This client will exit with the next ping message from chief.{RESET}")
+            # Don't start new place pixel thread
+            return
 
         if actually_send_place_now:
             loop2.run_until_complete(self.send_disable_placeNOW_capability())
@@ -228,13 +248,10 @@ class Client:
 
         # Schedule the next timer
         self.place_cooldown = reddit.get_place_cooldown(self.config.auth_token)
-        print(
-            f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
 
         self.place_timer = threading.Timer(self.place_cooldown + Client.place_delay, self.place_pixel)
         self.place_timer.daemon = True
-        print(
-            f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
+        print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + Client.place_delay}{LIGHTGREEN} seconds!{R}")
         self.place_timer.start()
 
     async def receive_messages(self):
@@ -253,6 +270,9 @@ class Client:
 
             except json.JSONDecodeError:
                 await self.log_error('invalidMessage', 'failedToParseJSON')
+            except reddit.RateLimitLimitReached as e:
+                # This should come from the ping message if self.ratelimited = True, that happens if place pixel hits too many rate limits. We do it this way because place pixel is in another thread
+                raise e
             except Exception as e:
                 print(f"{self.now()} {RED}Error processing message: {e}")
                 pprint(message)
@@ -413,6 +433,8 @@ class Client:
         self.connected = True
 
     async def handle_ping(self):
+        if self.rate_limited:
+            raise reddit.RateLimitLimitReached(rate_limit_times=self.rate_limited)
         if not (self.pong_timer and not self.pong_timer.finished):
             await self.send_pong()
 
@@ -475,13 +497,14 @@ class Client:
         self.order_image = await images.download_order_image(self.current_order.images.order,
                                                              save_images=self.config.save_images,
                                                              username=self.config.reddit_username)
-        print(f"{self.now()} {GREEN} Downloaded order image{R}")
+        print(f"{self.now()} {GREEN}Downloaded order image{R}")
 
         # download the priority map
         if self.current_order.images.priority:
             self.priority_image = await images.download_priority_image(self.current_order.images.priority,
                                                                        save_images=self.config.save_images,
                                                                        username=self.config.reddit_username)
+            print(f"{self.now()} {GREEN}Downloaded priority image{R}")
         else:
             self.priority_image = None  # to avoid having an older priority map
 
@@ -609,6 +632,9 @@ class Client:
                 else:
                     print(f"{now_usr(username=client.config.reddit_username)} Could not refresh token for this account")
                 return
+            except reddit.RateLimitLimitReached:
+                print(f"{PURPLE}Stopping {AQUA}{client.config.reddit_username}{GREEN} because it hit the rate limit limit which is {AQUA}{reddit.rate_limit_limit}{RESET}")
+                break
             else:  # If no error happened, but we got here then just let it die
                 print(f"{PURPLE}Stopping {AQUA}{client.config.reddit_username}{RESET}")
                 break
