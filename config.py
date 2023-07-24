@@ -15,11 +15,13 @@ parser = argparse.ArgumentParser(description="Headless Henk", epilog=f"The headl
 parser.add_argument('--config', help="Location of the toml config file", default='config.toml')
 parser.add_argument('--accounts', help="Location of the toml accounts file", default='accounts.toml')
 parser.add_argument('--tokens_cache', help="Location of the toml tokens_cache file", default='tokens_cache.toml')
+parser.add_argument('--ratelimitreportfile', help="Location of the ratelimitreport file", default='ratelimitreports/rate_limit_report.txt')
 args = parser.parse_args()
 
 configfilepath = args.config
 accountsfilepath = args.accounts
 tokens_cachepath = args.tokens_cache
+ratelimitreportpath = args.ratelimitreportfile
 
 
 # Dit is alleen maar een type

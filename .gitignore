@@ -10,6 +10,8 @@ chieftemplate.png
 reddit_session.json
 *.toml
 
+ratelimitreports/*.txt
+
 prioritymap.png
 
 # Byte-compiled / optimized / DLL files

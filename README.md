@@ -102,6 +102,7 @@ use an `accounts.toml`.**
 - You can configure the name of the `accounts.toml` with the `--accounts` flag.
 - You can configure the name of the `config.toml` with the `--config` flag.
 - You can configure the name of the `token_cache.toml` with the `--tokens_cache` flag.
+- You can configure the name of the `rate_limit_report.txt` with the  `--ratelimitreportfile` flag.
 
 ## Accounts Toml File
 
