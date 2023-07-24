@@ -33,7 +33,7 @@ lxml = ["lxml"]
 
 [[package]]
 name = "certifi"
-version = "2023.5.7"
+version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -111,6 +111,14 @@ description = "Internationalized Domain Names in Applications (IDNA)"
 category = "main"
 optional = false
 python-versions = ">=3.5"
+
+[[package]]
+name = "numpy"
+version = "1.25.1"
+description = "Fundamental package for array computing in Python"
+category = "main"
+optional = false
+python-versions = ">=3.9"
 
 [[package]]
 name = "ojson"
@@ -199,7 +207,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "3dae05d52c9bfbafbac2fa47501e5f329cbade217dfc92c451986a3254e99307"
+content-hash = "6f49ba03f63eecd47a841d73da02ce642b19b4513356c70476de850a9f0a39a7"
 
 [metadata.files]
 anyio = []
@@ -211,6 +219,7 @@ h11 = []
 httpcore = []
 httpx = []
 idna = []
+numpy = []
 ojson = []
 pillow = []
 requests = []

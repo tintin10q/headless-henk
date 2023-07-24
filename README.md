@@ -270,6 +270,11 @@ poetry run downloadcanvas
 to download the canvas. You don't have to put your auth token in `config.toml` or create an `acounts.toml` for this to
 work.
 
+# Shwowing number of auto placers 
+
+```poetry run counter```
+
+
 <br>
 <br>
 <br>
