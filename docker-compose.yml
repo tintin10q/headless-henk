@@ -9,6 +9,9 @@ services:
       - ./accounts.toml:/workdir/accounts.toml
       - ./cache:/cache
     command: --tokens_cache=/cache/tokens_cache.toml
+    environment:
+    - "TZ=Europe/Amsterdam"
+
   watchtower:
     image: containrrr/watchtower
     volumes:
@@ -16,3 +19,5 @@ services:
     labels:
       - "com.centurylinklabs.watchtower.scope=headless-henkies"
     command: --interval 3600 --scope headless-henkies
+    environment:
+    - "TZ=Europe/Amsterdam"
