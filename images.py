@@ -117,13 +117,17 @@ async def get_pixel_differences_with_canvas_download(order: Order,
     offset_x = order.offset.x
     offset_y = order.offset.y
 
-    # print(f"{template_width=}, {template_height=}, {offsetX=}, {offsetY=}, {canvas_indexes=}")
+    # Convert images to NumPy arrays for faster processing
+    order_image_pixels = np.array(order_image)
+    if priority_image:
+        priority_image_pixels = np.array(priority_image)
+    canvas_pixels = np.array(canvas)
 
     diff_pixels = []
 
     for x in range(template_width):
         for y in range(template_height):
-            template_pixel = order_image.getpixel((x, y))
+            template_pixel = order_image_pixels[y, x]
 
             if isinstance(template_pixel, int):
                 print(f"{now_usr(username=username)}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
@@ -132,17 +136,17 @@ async def get_pixel_differences_with_canvas_download(order: Order,
             if template_pixel[-1] == 0:
                 continue
 
-            canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
+            canvas_pixel = canvas_pixels[y + 1000 + offset_y, x + 1500 + offset_x]
 
-            if canvas_pixel != template_pixel:
+            if not np.array_equal(canvas_pixel, template_pixel):
                 priority = 0
                 if priority_image:
-                    priority_pixel = priority_image.getpixel((x, y))
+                    priority_pixel = priority_image_pixels[y, x]
                     priority = calculate_priority(priority_pixel)
                     priority += math.floor(random.random() * 10000)  # Increase randomness
 
                 diff_pixels.append(
-                    ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel, priority))
+                    ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, tuple(canvas_pixel), tuple(template_pixel), priority))
 
     del canvas
 
