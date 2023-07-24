@@ -44,6 +44,8 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
             async def get_canvaspart(*, _index, _image_id):
                 canvas_part = await get_canvas_part(_image_id, username=username)
                 canvas_parts[_index] = canvas_part
+                # apparently this is good for memory
+                await asyncio.sleep(0)
 
             get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
 

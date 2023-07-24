@@ -36,6 +36,8 @@ async def download_order_image(url: str, save_images: bool = default_save_images
     order_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         order_img.save("chieftemplate.png")
+    # apparently this is good for memory
+    await asyncio.sleep(0)
     return order_img
 
 
@@ -48,6 +50,8 @@ async def download_priority_image(url: str, save_images: bool = default_save_ima
     priority_img = Image.open(BytesIO(response.content)).convert("RGBA")
     if save_images:
         priority_img.save("prioritymap.png")
+    # apparently this is good for memory
+    await asyncio.sleep(0)
     return priority_img
 
 
