@@ -7,7 +7,7 @@ import httpx
 from PIL import Image
 
 import reddit
-from colors import GREEN, AQUA, RESET, printc, BLUE
+from colors import GREEN, AQUA, RESET, printc, BLUE, RED
 from now import now_usr
 
 
@@ -47,7 +47,24 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
 
             get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
 
-    await asyncio.gather(*get_canvas_coroutines)
+
+    try:
+        await asyncio.gather(*get_canvas_coroutines)
+    except RuntimeError as e:
+        print(f'{now_usr(username=username)}{RED}Something went wrong downloading the canvas trying again, the error was:{RESET}', e)
+        canvas_parts = {}
+
+        get_canvas_coroutines = []
+        for i, image_id in enumerate(image_ids):
+            if image_id is not None:
+                async def get_canvaspart(*, _index, _image_id):
+                    canvas_part = await get_canvas_part(_image_id, username=username)
+                    canvas_parts[_index] = canvas_part
+                    # apparently this is good for memory
+                    await asyncio.sleep(0)
+
+                get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
+        await asyncio.gather(*get_canvas_coroutines)
 
     # Calculate the size of the final canvas image.
     final_canvas_width = 3000
