@@ -1,4 +1,4 @@
-FROM python:3-bookworm
+FROM python:3-slim
 WORKDIR /workdir
 COPY requirements.txt .
 RUN apt-get update && \
@@ -8,5 +8,6 @@ RUN apt-get update && \
         pip install --no-cache-dir -r requirements.txt  && \
         apt-get purge -y libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk \
     libharfbuzz-dev libfribidi-dev libxcb1-dev
+RUN apt-get autopurge -y && apt-get clean
 COPY . ./
 ENTRYPOINT ["python3","-u","gaanmetdiebanaan.py"]
