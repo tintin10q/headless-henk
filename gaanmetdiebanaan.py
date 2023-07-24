@@ -57,7 +57,7 @@ async def run_with_accounts_toml():
         print(f"{now()} {LIGHTRED}There were no valid clients in {AQUA}{accountsfilepath}{RESET}. {BLUE}Make sure you have an internet connection and the right password. Change the accounts and try again.{RESET}")
         return
 
-    run_client_coreroutines = [Client.run_client(client, delay=index * 15) for index, client in enumerate(clients)]
+    run_client_coreroutines = [Client.run_client(client, delay=index * 5) for index, client in enumerate(clients)]
 
     await asyncio.gather(*run_client_coreroutines)
 

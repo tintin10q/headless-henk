@@ -34,7 +34,7 @@ class Client:
     """
     __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected', 'rate_limited'
 
-    place_delay = 7
+    place_delay = 3
 
     def __init__(self, config: Config = None):
         if config is None:
@@ -101,6 +101,7 @@ class Client:
 
         if not self.id:  # this may be out of date after a disconnect.
             print(f"{self.now()} {GREEN}Never yet connected to chief (we dont have an id yet!) trying again in {Client.place_delay} seconds")
+            print(f"{self.order_image}")
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.daemon = True
             self.place_timer.start()
@@ -575,7 +576,7 @@ class Client:
     @staticmethod
     async def run_client(client: "Client", delay: int = None):
         if isinstance(delay, int) and delay > -1:
-            delay += random.randint(0, 15)
+            delay += random.randint(-2, 5)
             print(
                 f"{now_usr(username=client.config.reddit_username)} {GREEN}Starting {AQUA}{client.config.reddit_username or f'{GREEN}client'}{GREEN} in {AQUA}{delay}{AQUA}{GREEN} seconds{R}")
             await asyncio.sleep(delay)
