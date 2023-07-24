@@ -117,13 +117,17 @@ async def get_pixel_differences_with_canvas_download(order: Order,
     offset_x = order.offset.x
     offset_y = order.offset.y
 
-    # print(f"{template_width=}, {template_height=}, {offsetX=}, {offsetY=}, {canvas_indexes=}")
+    # Convert images to NumPy arrays for faster processing
+    order_image_pixels = np.array(order_image)
+    if priority_image:
+        priority_image_pixels = np.array(priority_image)
+    canvas_pixels = np.array(canvas)
 
     diff_pixels = []
 
     for x in range(template_width):
         for y in range(template_height):
-            template_pixel = order_image.getpixel((x, y))
+            template_pixel = order_image_pixels[y, x]
 
             if isinstance(template_pixel, int):
                 print(f"{now_usr(username=username)}{RED} THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG!{RESET}")
@@ -132,17 +136,17 @@ async def get_pixel_differences_with_canvas_download(order: Order,
             if template_pixel[-1] == 0:
                 continue
 
-            canvas_pixel = canvas.getpixel((x + 1500 + offset_x, y + 1000 + offset_y))
+            canvas_pixel = canvas_pixels[y + 1000 + offset_y, x + 1500 + offset_x]
 
-            if canvas_pixel != template_pixel:
+            if not np.array_equal(canvas_pixel, template_pixel):
                 priority = 0
                 if priority_image:
-                    priority_pixel = priority_image.getpixel((x, y))
+                    priority_pixel = priority_image_pixels[y, x]
                     priority = calculate_priority(priority_pixel)
                     priority += math.floor(random.random() * 10000)  # Increase randomness
 
                 diff_pixels.append(
-                    ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, canvas_pixel, template_pixel, priority))
+                    ImageDiff(x + 1500 + offset_x, y + 1000 + offset_y, tuple(canvas_pixel), tuple(template_pixel), priority))
 
     del canvas
 
@@ -156,33 +160,34 @@ def calculate_priority(pixel: Tuple[int, int, int, int]) -> int:
     return (r << 16) + (g << 8) + b
 
 
-def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[
-    Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
+import numpy as np
+
+def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str = None) -> List[Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
     """ This one is just for testing, use save_images config to save the images, and then you can load them into this """
     template_width, template_height = 2000, 1500
     offsetX, offsetY = -1000, -1000
 
     diff_pixels = []
 
+    # Convert images to NumPy arrays for faster processing
+    template_pixels = np.array(chief_template)
+    canvas_pixels = np.array(canvas)
+
+    # Calculate offsets outside the loop
+    offset_x_template = 1500 + offsetX
+    offset_y_template = 1000 + offsetY
+
     for x in range(template_width):
         for y in range(template_height):
-            template_pixel = chief_template.getpixel((x, y))
-
-            if isinstance(template_pixel, int):
-                print(
-                    f"{now_usr(username=username)} {RED}THE TEMPLATE IS USING A 4 BIT PNG AND NOT 32 BIT PNG! {RESET}")
-                return []
-                # return find_pixel_differences_4bitcanvas(canvas, chief_template, template_width=template_width, template_height=template_height, offset_x=offsetX, offset_y=offsetY)
+            template_pixel = template_pixels[y, x]
 
             if template_pixel[-1] == 0:
                 continue
 
-            canvas_pixel = canvas.getpixel((x + 1500 + offsetX, y + 1000 + offsetY))
-            if canvas_pixel != template_pixel:
+            canvas_pixel = canvas_pixels[y + offset_y_template, x + offset_x_template]
+            if not np.array_equal(canvas_pixel, template_pixel):
                 print("not equal", canvas_pixel, template_pixel)
-                diff_pixels.append((x + 1500 + offsetX, y + 1000 + offsetY, canvas_pixel, template_pixel))
-
-    del canvas, chief_template
+                diff_pixels.append((x + offset_x_template, y + offset_y_template, tuple(canvas_pixel), tuple(template_pixel)))
 
     return diff_pixels
 
