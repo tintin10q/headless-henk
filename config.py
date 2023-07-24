@@ -52,7 +52,7 @@ class Config:
     canvas_indexes: List[Literal[0, 1, 2, 3, 4, 5, None]]
     chief_host: str = default_chief_host
     author: str = "Quinten-C"
-    version: str = '3.2.0'
+    version: str = '3.3.0'
     name: str = 'Headless-Henk'
     reddit_uri_https: str = default_reddit_uri_https
     reddit_uri_wss: str = default_reddit_uri_wss
@@ -73,7 +73,8 @@ class Config:
 
 __config = None
 
-def create_file_if_it_doesnt_exit(filename:str):
+
+def create_file_if_it_doesnt_exit(filename: str):
     if not os.path.exists(tokens_cachepath):
         # Create the file if not there yet
         with open(tokens_cachepath, "w+"):
@@ -91,7 +92,6 @@ def load_tokens_cache_toml() -> dict:
 
 
 def cache_auth_token(*, username: str, token: str):
-
     create_file_if_it_doesnt_exit(tokens_cachepath)
 
     with open(tokens_cachepath, "r+") as tokens_cachefile:
@@ -174,7 +174,8 @@ def create_default_config(filename: configfilepath):
 
         starter_config = {"reddit_username": 'ENTER USERNAME HERE!', "reddit_password": 'ENTER PASSWORD HERE!', 'chief_host': default_chief_host, 'reddit_uri_https': default_reddit_uri_https,
                           'reddit_uri_wss': default_reddit_uri_wss,
-                          'default_canvas_indexes': default_canvas_indexes_toml, 'stats': default_stats, "pingpong": default_pingpong, "save_images": default_save_images}
+                          'default_canvas_indexes': default_canvas_indexes_toml, 'stats': default_stats, "pingpong": default_pingpong, "save_images": default_save_images,
+                          'use_proxy': False, 'proxy_ip': '', 'proxy_use_https': False}
         toml.dump(starter_config, config_file)
         print(GREEN + f"Created {filename} with default config. You still need to enter your reddit jwt into this file though! See README for how to get the jwt." + RESET)
 

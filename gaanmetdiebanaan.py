@@ -6,7 +6,7 @@ import websockets
 
 import reddit
 from client import Client
-from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE
+from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE, WHITE
 from config import load_config, load_accounts, load_tokens_cache_toml, accountsfilepath, load_config_without_auth_without_cache, cache_auth_token
 import asyncio
 
@@ -75,6 +75,7 @@ async def metdiebanaan():
         await run_with_accounts_toml()
     else:
         config = load_config()
+        print(f"{WHITE}Henk {AQUA}V{config.version}{RESET}")
         # make client
         client = Client(config)
         await Client.run_client(client)
