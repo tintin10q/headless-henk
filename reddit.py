@@ -336,7 +336,7 @@ mutation GetPersonalizedTimer{
     # print(response.status_code, response.text)
 
     data = response.json()
-    print(f"{now_usr(username=username)}{GREEN}Cooldown data response: {AQUA}{data}{RESET}")
+    print(f"{now_usr(username=username)} {GREEN}Cooldown data response: {AQUA}{data}{RESET}")
 
     if not data.get('data'):
         return None
