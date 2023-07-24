@@ -57,6 +57,8 @@ If you have problems with poetry just delete `poetry.lock` and try again.
 
 **Again, you start the client with `poetry run gaanmetdiebanaan`**
 
+After you run the installation script you still have to add poetry to your path.
+
 ## Run Henk with Docker
 
 There is also a docker available at: [ghcr.io/tintin10q/headless-henk:latest](ghcr.io/tintin10q/headless-henk:latest).
@@ -98,6 +100,7 @@ use an `accounts.toml`.**
 
 - You can configure the name of the `accounts.toml` with the `--accounts` flag.
 - You can configure the name of the `config.toml` with the `--config` flag.
+- You can configure the name of the `token_cache.toml` with the `--tokens_cache` flag.
 
 ## Accounts Toml File
 
@@ -139,6 +142,11 @@ canvas_indexes = ["0", "1", "2", "3", "4", "5"]  # Canvas indexes to download, T
 stats = false   # Wether to subscribe to stats updates from chief
 pingpong = false   # Whether the client should show ping and pong messages.
 save_images = false   # Whether the client should save images, canvas.png prioritymap.png and chieftemplate.png
+use_proxy = false
+proxy_ip = ''
+proxy_username = ''
+proxy_password = ''
+proxy_use_https = false
 ```
 
 In the config file you can only use 1 account, if you want to use multiple accounts in one process use
@@ -169,18 +177,23 @@ If the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDI
 config.toml file is ignored, and you can set the other vars as
 described in this table:
 
-| Name                     | Default                                 | Description                                                                                                                                                    |   
-|--------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PLACENL_AUTH_TOKEN       |                                         | The reddit jwt token to use. See the `How to get reddit jwt` section                                                                                           |
-| PLACENL_REDDIT_USERNAME  |                                         | The reddit username you want to use                                                                                                                            |
-| PLACENL_REDDIT_PASSWORD  |                                         | The reddit password you want to use                                                                                                                            | 
-| PLACENL_CHIEF_HOST       | chief.placenl.nl                        | The host of the PlaceNL chief instance                                                                                                                         |
-| PLACENL_REDDIT_URI_HTTPS | https://gql-realtime-2.reddit.com/query | The reddit https gql api endpoint                                                                                                                              | 
-| PLACENL_REDDIT_URI_WSS   | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
-| PLACENL_CANVAS_INDEXES   | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
-| PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
-| PLACENL_PINGPONG         | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
-| PLACENL_SAVE_IMAGES      | false                                   | Whether the client should save images it receives. canvas.png, prioritymap.png and chieftemplate.png                                                           |
+| Name                      | Default                                 | Description                                                                                                                                                    |   
+|---------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| PLACENL_AUTH_TOKEN        |                                         | The reddit jwt token to use. See the `How to get reddit jwt` section                                                                                           |
+| PLACENL_REDDIT_USERNAME   |                                         | The reddit username you want to use                                                                                                                            |
+| PLACENL_REDDIT_PASSWORD   |                                         | The reddit password you want to use                                                                                                                            | 
+| PLACENL_CHIEF_HOST        | chief.placenl.nl                        | The host of the PlaceNL chief instance                                                                                                                         |
+| PLACENL_REDDIT_URI_HTTPS  | https://gql-realtime-2.reddit.com/query | The reddit https gql api endpoint                                                                                                                              | 
+| PLACENL_REDDIT_URI_WSS    | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
+| PLACENL_CANVAS_INDEXES    | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
+| PLACENL_SUBSCRIBE_STATS   | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
+| PLACENL_PINGPONG          | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
+| PLACENL_SAVE_IMAGES       | false                                   | Whether the client should save images it receives. canvas.png, prioritymap.png and chieftemplate.png                                                           |
+| PLACENL_USE_PROXY         | false                                   | Whether the client should use a proxy. Only works for all the http requests.                                                                                   |
+| PLACENL_PROXY_IP          | ''                                      | The ip of the proxy                                                                                                                                            |
+| PLACENL_PROXY_USERNAME    | ''                                      | Username for the proxy                                                                                                                                         |
+| PLACENL_PROXY_PASSWORD    | ''                                      | Password for the proxy                                                                                                                                         |
+| PLACENL_PROXY_USE_HTTPS   | false                                   | True if the proxy is https and not http                                                                                                                        | 
 
 Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 

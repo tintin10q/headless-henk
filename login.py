@@ -12,6 +12,8 @@ import json
 import toml
 from bs4 import BeautifulSoup
 
+import proxy
+
 from colors import RED, GREEN, printc, RESET, YELLOW, AQUA
 from now import now_usr
 
@@ -40,7 +42,10 @@ def get_reddit_token(username: str, password: str) -> str | None:
     s.headers.update(INITIAL_HEADERS)
 
     try:
-        s.get(REDDIT_URL)
+        if proxy.use:
+            s.get(REDDIT_URL, proxies=proxy.proxy_dict, auth=proxy.proxy_auth)
+        else:
+            s.get(REDDIT_URL)
     except Exception as e:
         printc(f"{now_usr()} {RED}Could not connect to reddit!{RESET}")
         printc(f"{RED}This was the error:{RESET}", e)
@@ -49,19 +54,32 @@ def get_reddit_token(username: str, password: str) -> str | None:
 
     # Get csrf token from login page
     printc(f"{now_usr(username=username)} {GREEN}Getting CSRF token...")
-    r = s.get(LOGIN_URL)
+
+    if proxy.use:
+        r = s.get(LOGIN_URL, proxies=proxy.proxy_dict, auth=proxy.proxy_auth)
+    else:
+        r = s.get(LOGIN_URL)
     soup = BeautifulSoup(r.content, "html.parser")
     csrf_token = soup.find("input", {"name": "csrf_token"})["value"]
     time.sleep(0.5)
 
     # Login
     printc(f"{now_usr(username=username)} {GREEN}Logging in...")
-    r = s.post(LOGIN_URL, data={
-        "username": username,
-        "password": password,
-        "dest": REDDIT_URL,
-        "csrf_token": csrf_token
-    })
+
+    if proxy.use:
+        r = s.post(LOGIN_URL, data={
+            "username": username,
+            "password": password,
+            "dest": REDDIT_URL,
+            "csrf_token": csrf_token
+        }, proxies=proxy.proxy_dict, auth=proxy.proxy_auth)
+    else:
+        r = s.post(LOGIN_URL, data={
+            "username": username,
+            "password": password,
+            "dest": REDDIT_URL,
+            "csrf_token": csrf_token
+        })
     time.sleep(0.5)
     if r.status_code != 200:
         try:
@@ -78,7 +96,10 @@ def get_reddit_token(username: str, password: str) -> str | None:
 
     # Get new access token
     printc(f"{now_usr(username=username)} {GREEN}Getting {RED}reddit{GREEN} access token...")
-    r = s.get(REDDIT_URL)
+    if proxy.use:
+        r = s.get(REDDIT_URL, proxies=proxy.proxy_dict, auth=proxy.proxy_auth)
+    else:
+        r = s.get(REDDIT_URL)
     soup = BeautifulSoup(r.content, features="html.parser")
     try:
         data_str = soup.find("script", {"id": "data"}).contents[0][len("window.__r = "):-1]

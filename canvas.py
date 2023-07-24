@@ -4,7 +4,6 @@ from typing import List, Literal, Tuple
 from io import BytesIO
 
 import httpx
-import requests
 from PIL import Image
 
 import reddit
