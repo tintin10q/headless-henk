@@ -28,7 +28,8 @@ windows [use this guide](https://www.geeksforgeeks.org/how-to-install-docker-on-
 
 If you have trouble running the docker check out Run Henk with Poetry below. That method is also pretty easy.
 
-> This login method does not work with accounts with 2 factor authentication, disable it. If you have 2fa use the `auth_token` config.
+> This login method does not work with accounts with 2 factor authentication, disable it. If you have 2fa use
+> the `auth_token` config.
 
 # Runnning Henk
 
@@ -142,11 +143,6 @@ canvas_indexes = ["0", "1", "2", "3", "4", "5"]  # Canvas indexes to download, T
 stats = false   # Wether to subscribe to stats updates from chief
 pingpong = false   # Whether the client should show ping and pong messages.
 save_images = false   # Whether the client should save images, canvas.png prioritymap.png and chieftemplate.png
-use_proxy = false
-proxy_ip = ''
-proxy_username = ''
-proxy_password = ''
-proxy_use_https = false
 ```
 
 In the config file you can only use 1 account, if you want to use multiple accounts in one process use
@@ -177,23 +173,18 @@ If the `PLACENL_AUTH_TOKEN` or both `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDI
 config.toml file is ignored, and you can set the other vars as
 described in this table:
 
-| Name                      | Default                                 | Description                                                                                                                                                    |   
-|---------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PLACENL_AUTH_TOKEN        |                                         | The reddit jwt token to use. See the `How to get reddit jwt` section                                                                                           |
-| PLACENL_REDDIT_USERNAME   |                                         | The reddit username you want to use                                                                                                                            |
-| PLACENL_REDDIT_PASSWORD   |                                         | The reddit password you want to use                                                                                                                            | 
-| PLACENL_CHIEF_HOST        | chief.placenl.nl                        | The host of the PlaceNL chief instance                                                                                                                         |
-| PLACENL_REDDIT_URI_HTTPS  | https://gql-realtime-2.reddit.com/query | The reddit https gql api endpoint                                                                                                                              | 
-| PLACENL_REDDIT_URI_WSS    | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
-| PLACENL_CANVAS_INDEXES    | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
-| PLACENL_SUBSCRIBE_STATS   | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
-| PLACENL_PINGPONG          | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
-| PLACENL_SAVE_IMAGES       | false                                   | Whether the client should save images it receives. canvas.png, prioritymap.png and chieftemplate.png                                                           |
-| PLACENL_USE_PROXY         | false                                   | Whether the client should use a proxy. Only works for all the http requests.                                                                                   |
-| PLACENL_PROXY_IP          | ''                                      | The ip of the proxy                                                                                                                                            |
-| PLACENL_PROXY_USERNAME    | ''                                      | Username for the proxy                                                                                                                                         |
-| PLACENL_PROXY_PASSWORD    | ''                                      | Password for the proxy                                                                                                                                         |
-| PLACENL_PROXY_USE_HTTPS   | false                                   | True if the proxy is https and not http                                                                                                                        | 
+| Name                     | Default                                 | Description                                                                                                                                                    |   
+|--------------------------|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| PLACENL_AUTH_TOKEN       |                                         | The reddit jwt token to use. See the `How to get reddit jwt` section                                                                                           |
+| PLACENL_REDDIT_USERNAME  |                                         | The reddit username you want to use                                                                                                                            |
+| PLACENL_REDDIT_PASSWORD  |                                         | The reddit password you want to use                                                                                                                            | 
+| PLACENL_CHIEF_HOST       | chief.placenl.nl                        | The host of the PlaceNL chief instance                                                                                                                         |
+| PLACENL_REDDIT_URI_HTTPS | https://gql-realtime-2.reddit.com/query | The reddit https gql api endpoint                                                                                                                              | 
+| PLACENL_REDDIT_URI_WSS   | wss://gql-realtime-2.reddit.com/query   | The reddit websocket gql api endpoint                                                                                                                          | 
+| PLACENL_CANVAS_INDEXES   | [0, 1, 2, 3, 4, 5]                      | The canvas indexes to download, should be a json list with either 0-5 or null of exactly 6 elements                                                            | 
+| PLACENL_SUBSCRIBE_STATS  | false                                   | Whether the client should subscribe to stats updates from chief. Stats are always shown once on startup. Valid values are t, true, f, false (case insensitive) |
+| PLACENL_PINGPONG         | false                                   | Whether the client should show ping and pong messages.                                                                                                         |
+| PLACENL_SAVE_IMAGES      | false                                   | Whether the client should save images it receives. canvas.png, prioritymap.png and chieftemplate.png                                                           |
 
 Because of the defaults you only have to set `PLACENL_AUTH_TOKEN`.
 
@@ -214,7 +205,8 @@ export PLACENL_PINGPONG="false"
 export PLACENL_SAVE_IMAGES="false"
 ```
 
-If an `accounts.toml` file is present the contents of `PLACENL_REDDIT_PASSWORD`,  `PLACENL_REDDIT_USERNAME` and `PLACENL_REDDIT_AUTH_TOKEN` env vars are ignored.
+If an `accounts.toml` file is present the contents of `PLACENL_REDDIT_PASSWORD`,  `PLACENL_REDDIT_USERNAME`
+and `PLACENL_REDDIT_AUTH_TOKEN` env vars are ignored.
 
 # How to get reddit jwt?
 
@@ -248,6 +240,23 @@ If the login does it work
 > also because I don't know how reddit refreshes their tokens. Let me know if you konw.
 
 **Be sure to not share this jwt with others! It is basically the same as sharing your password!**
+
+# Using a proxy
+
+To you a proxy you can define the following standard environment vars http_proxy, https_proxy, no_proxy, and all_proxy.
+Uppercase variants of these variables are also supported.
+
+```
+export http_proxy="http://10.10.1.10:3128"
+export https_proxy="http://10.10.1.10:1080"
+export all_proxy="socks5://10.10.1.10:3434"
+```
+
+You can put auth you want to use in the url like this: `http://user:password@10.10.1.10:1080`.
+
+For more infromation see [requests proxy docs](https://requests.readthedocs.io/en/latest/user/advanced/#proxies)
+and [httpx proxy docs](https://www.python-httpx.org/advanced/#http-proxying)
+
 
 # Downloading the Canvas
 
