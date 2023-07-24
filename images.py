@@ -187,6 +187,7 @@ def get_pixel_differences(canvas: Image, chief_template: Image, *, username: str
 
     return diff_pixels
 
+
 def find_pixel_differences_4bitcanvas(canvas: Image, chief_template: Image, *, template_width, template_height,
                                       offset_x, offset_y) -> List[
     Tuple[int, int, Tuple[int, int, int, int], Tuple[int, int, int, int]]]:
