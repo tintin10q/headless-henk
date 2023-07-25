@@ -41,103 +41,108 @@ class LiveCanvas:
         self.connected: bool = False
 
     async def connect(self):
-        async with websockets.connect(self.reddit_uri_wss, origin="https://garlic-bread.reddit.com") as websocket:
-            self.websocket = websocket
-            connection_init_message = {
-                "type": 'connection_init',
-                "payload": {
-                    "Authorization": self.authorization
-                }
-            }
-
-            printc(self.now(), f"{GREEN}Live canvas connected!")
-            await websocket.send(json.dumps(connection_init_message))
-
-            result = await websocket.recv()  # This should be {"type":"connection_ack"}
-            printc(self.now(), f"{GREEN}Live canvas connected!!{RESET}{result}")
-
-            ask_for_canvases_routines = []
-            for canvas_id in self.canvas_indexes:
-                url_message = {
-                    "id": str(self.message_id),
-                    "type": "start",
-                    "payload": {
-                        "variables": {
-                            "input": {
-                                "channel": {
-                                    "teamOwner": "GARLICBREAD",
-                                    "category": "CANVAS",
-                                    "tag": str(canvas_id)
-                                }
-                            }
-                        },
-                        "extension": {},
-                        "operationName": "replace",
-                        "query": """subscription replace($input: SubscribeInput!) {  subscribe(input: $input) {    id    ... on BasicMessage {      data {        __typename        ... on FullFrameMessageData {          __typename          name          timestamp        }        ... on DiffFrameMessageData {          __typename          name          currentTimestamp          previousTimestamp        }      }      __typename    }    __typename  }}"""
+        while True:
+            try:
+                async with websockets.connect(self.reddit_uri_wss, origin="https://garlic-bread.reddit.com") as websocket:
+                    self.websocket = websocket
+                    connection_init_message = {
+                        "type": 'connection_init',
+                        "payload": {
+                            "Authorization": self.authorization
+                        }
                     }
-                }
-                self.message_id += 1
-                ask_for_canvases_routines.append(websocket.send(json.dumps(url_message)))
 
-            await asyncio.gather(*ask_for_canvases_routines)
+                    printc(self.now(), f"{GREEN}Live canvas connected!")
+                    await websocket.send(json.dumps(connection_init_message))
 
-            del canvas_id
+                    result = await websocket.recv()  # This should be {"type":"connection_ack"}
+                    printc(self.now(), f"{GREEN}Live canvas connected!!{RESET}{result}")
 
-            async for message in self.websocket:
+                    ask_for_canvases_routines = []
+                    for canvas_id in self.canvas_indexes:
+                        url_message = {
+                            "id": str(self.message_id),
+                            "type": "start",
+                            "payload": {
+                                "variables": {
+                                    "input": {
+                                        "channel": {
+                                            "teamOwner": "GARLICBREAD",
+                                            "category": "CANVAS",
+                                            "tag": str(canvas_id)
+                                        }
+                                    }
+                                },
+                                "extension": {},
+                                "operationName": "replace",
+                                "query": """subscription replace($input: SubscribeInput!) {  subscribe(input: $input) {    id    ... on BasicMessage {      data {        __typename        ... on FullFrameMessageData {          __typename          name          timestamp        }        ... on DiffFrameMessageData {          __typename          name          currentTimestamp          previousTimestamp        }      }      __typename    }    __typename  }}"""
+                            }
+                        }
+                        self.message_id += 1
+                        ask_for_canvases_routines.append(websocket.send(json.dumps(url_message)))
 
-                message = ojson.loads(message)
+                    await asyncio.gather(*ask_for_canvases_routines)
 
-                # print(message)
+                    del canvas_id
 
-                match message:
-                    case {"payload": {"data": {"subscribe": {"data": {"__typename": "FullFrameMessageData", "name": full_canvas_url}}}}, "id": full_canvas_id}:
-                        full_canvas_id = int(full_canvas_id) - 2
-                        print(f"{self.now()} {GREEN}Live Canvas received full frame of canvas {AQUA}{full_canvas_id}{RESET}")
 
-                        while not self.canvas_parts[full_canvas_id]:
-                            try:
-                                async with httpx.AsyncClient() as client:
-                                    response = await client.get(full_canvas_url)
-                                # response = requests.get(full_canvas_url)
-                                self.canvas_parts[full_canvas_id] = Image.open(BytesIO(response.content))
-                                break
-                            except:
-                                print(f"{self.now()} {YELLOW}Could not fetch full canvas part {AQUA}{full_canvas_id}{YELLOW} {full_canvas_url}, trying again{R}")
+                    async for message in self.websocket:
 
-                        if not self.connected and all(self.canvas_parts):
-                            self.connected = True
+                        message = ojson.loads(message)
 
-                    case {"payload": {"data": {"subscribe": {"data": {"__typename": "DiffFrameMessageData", "name": difference_url}}}}, "id": difference_canvas_id}:
-                        if self.show_canvas_updates:
-                            print(f"{self.now()} {GREEN}Received canvas update for canvas {AQUA}{difference_canvas_id}{R}")
+                        # print(message)
 
-                        difference_canvas_id = int(difference_canvas_id) - 2
+                        match message:
+                            case {"payload": {"data": {"subscribe": {"data": {"__typename": "FullFrameMessageData", "name": full_canvas_url}}}}, "id": full_canvas_id}:
+                                full_canvas_id = int(full_canvas_id) - 2
+                                print(f"{self.now()} {GREEN}Live Canvas received full frame of canvas {AQUA}{full_canvas_id}{RESET}")
 
-                        if not self.canvas_parts[difference_canvas_id]:
-                            print(f"{self.now()} {RED} Got canvas update for part {AQUA}{difference_canvas_id}{RED} but we don't have that canvas part yet? Ignoring it.{R}")
-                            continue
+                                while not self.canvas_parts[full_canvas_id]:
+                                    try:
+                                        async with httpx.AsyncClient() as client:
+                                            response = await client.get(full_canvas_url)
+                                        # response = requests.get(full_canvas_url)
+                                        self.canvas_parts[full_canvas_id] = Image.open(BytesIO(response.content))
+                                        break
+                                    except:
+                                        print(f"{self.now()} {YELLOW}Could not fetch full canvas part {AQUA}{full_canvas_id}{YELLOW} {full_canvas_url}, trying again{R}")
 
-                        while True:
-                            try:
-                                async with httpx.AsyncClient() as client:
-                                    response = await client.get(difference_url)
-                                # response = requests.get(difference_url)
-                                diff_img = Image.open(BytesIO(response.content)).convert("RGBA")
-                                # img.save(f"diffs/{difference_canvas_id}_{time.time()}.png")
+                                if not self.connected and all(self.canvas_parts):
+                                    self.connected = True
 
-                                # Paste the image
-                                self.canvas_parts[difference_canvas_id].paste(diff_img, (0, 0), diff_img)
+                            case {"payload": {"data": {"subscribe": {"data": {"__typename": "DiffFrameMessageData", "name": difference_url}}}}, "id": difference_canvas_id}:
+                                if self.show_canvas_updates:
+                                    print(f"{self.now()} {GREEN}Received canvas update for canvas {AQUA}{difference_canvas_id}{R}")
 
-                                break
-                            except Exception as e:
-                                print(f"{self.now()} {YELLOW}Could not fetch difference canvas part {AQUA}{difference_canvas_id}{YELLOW}, {difference_url} trying again, {e}{R}")
-                            except websocket.exceptions.ConnectionClosedError:
-                                print(f'{self.now()} {RED}Live canvas got disconnected!{RESET}')
+                                difference_canvas_id = int(difference_canvas_id) - 2
 
-                    case {"type": "ka"}:
-                        pass
-                    case _:
-                        print(f"{self.now()} {RED}Could not match live canvas message{RESET}", message, type(message))
+                                if not self.canvas_parts[difference_canvas_id]:
+                                    print(f"{self.now()} {RED} Got canvas update for part {AQUA}{difference_canvas_id}{RED} but we don't have that canvas part yet? Ignoring it.{R}")
+                                    continue
+
+                                while True:
+                                    try:
+                                        async with httpx.AsyncClient() as client:
+                                            response = await client.get(difference_url)
+                                        # response = requests.get(difference_url)
+                                        diff_img = Image.open(BytesIO(response.content)).convert("RGBA")
+                                        # img.save(f"diffs/{difference_canvas_id}_{time.time()}.png")
+
+                                        # Paste the image
+                                        self.canvas_parts[difference_canvas_id].paste(diff_img, (0, 0), diff_img)
+
+                                        break
+                                    except Exception as e:
+                                        print(f"{self.now()} {YELLOW}Could not fetch difference canvas part {AQUA}{difference_canvas_id}{YELLOW}, {difference_url} trying again, {e}{R}")
+                                    except websocket.exceptions.ConnectionClosedError:
+                                        print(f'{self.now()} {RED}Live canvas got disconnected!{RESET}')
+
+                            case {"type": "ka"}:
+                                pass
+                            case _:
+                                print(f"{self.now()} {RED}Could not match live canvas message{RESET}", message, type(message))
+            except websockets.ConnectionClosedError as e:
+                print(f"{self.now()} {YELLOW} Reddit closed the live canvas connection. Reconnecting!")
 
     @property
     def canvas(self) -> Image:
