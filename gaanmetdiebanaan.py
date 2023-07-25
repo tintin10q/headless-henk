@@ -65,7 +65,7 @@ async def run_with_accounts_toml():
     live_canvas = LiveCanvas(config.reddit_uri_wss, config.canvas_indexes)
     clients = [PixelClient(config, chief, live_canvas) for config in configs]
 
-    run_client_coreroutines = [PixelClient.run(client, delay=index * 5) for index, client in enumerate(clients)]
+    run_client_coreroutines = [PixelClient.run(client, delay=index * 30) for index, client in enumerate(clients)]
 
     await asyncio.gather(chief.connect(), live_canvas.connect(), *run_client_coreroutines)
 

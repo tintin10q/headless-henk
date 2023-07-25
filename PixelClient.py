@@ -129,6 +129,7 @@ class PixelClient:
         print(f"{client.now()} {GREEN}Live Canvas got connected!")
         await client.chief.has_canvas_future()
         print(f"{client.now()} {GREEN}Chief got connected! Starting {client.config.reddit_username} in {AQUA}{delay}{GREEN} seconds{R}")
+        delay += random.randint(0, 10)
         await asyncio.sleep(delay)
         while True:
             client.place_cooldown = reddit.get_place_cooldown(authorization=client.config.auth_token, username=client.config.reddit_username)
