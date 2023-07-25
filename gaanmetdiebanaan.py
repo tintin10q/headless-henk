@@ -61,6 +61,7 @@ async def run_with_accounts_toml():
 
     # We actually have clients, make a connection to chief
     config = load_config_without_auth_without_cache()
+    config.version + '-' + str(len(configs))
     chief = ChiefClient(config.chief_host)
     live_canvas = LiveCanvas(config.reddit_uri_wss, config.canvas_indexes)
     clients = [PixelClient(config, chief, live_canvas) for config in configs]
