@@ -143,6 +143,7 @@ class LiveCanvas:
                                 print(f"{self.now()} {RED}Could not match live canvas message{RESET}", message, type(message))
             except websockets.ConnectionClosedError as e:
                 print(f"{self.now()} {YELLOW} Reddit closed the live canvas connection. Reconnecting!")
+                self.message_id = 0b10
 
     @property
     def canvas(self) -> Image:
