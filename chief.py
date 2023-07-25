@@ -369,7 +369,7 @@ class ChiefClient:
         await self.send_message('place', {'x': x, 'y': y, 'color': color})
 
     @staticmethod
-    async def run(chief: 'ChiefClient'):
+    async def run_client(chief: 'ChiefClient'):
         while True:
             try:
                 await chief.connect()

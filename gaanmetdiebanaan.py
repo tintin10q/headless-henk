@@ -68,7 +68,7 @@ async def run_with_accounts_toml():
 
     run_client_coreroutines = [PixelClient.run(client, delay=index * 30) for index, client in enumerate(clients)]
 
-    await asyncio.gather(chief.connect(), live_canvas.connect(), *run_client_coreroutines)
+    await asyncio.gather(ChiefClient.run_client(chief), live_canvas.connect(), *run_client_coreroutines)
 
 
 async def metdiebanaan():
