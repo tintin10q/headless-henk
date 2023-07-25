@@ -57,8 +57,13 @@ class ChiefClient:
             # Send a sample 'brand' message to the server
             self.ws = websocket
 
+            self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)
+            self.pong_timer.daemon = True
+            self.pong_timer.start()
+
             # Receive messages from the server
             await self.receive_messages()
+
 
     async def receive_messages(self):
         """ Do the basic parsing of an incoming message, separate type and payload
@@ -304,7 +309,8 @@ class ChiefClient:
             await self.send_pong()
 
     def send_pong_job(self):
-        print(self.now(), f"{GREEN}Pong from other thread to stay alive")
+        if self.pingpong:
+            print(self.now(), f"{GREEN}Pong from other thread to stay alive")
         loop = asyncio.new_event_loop()
         loop.run_until_complete(self.send_pong())
         self.pong_timer = threading.Timer((self.keepaliveTimeout - self.keepaliveInterval) / 1000, self.send_pong_job)

@@ -35,7 +35,7 @@ class LiveCanvas:
 
         self.canvas_parts = [None, None, None, None, None, None]
 
-        self.show_canvas_updates = True
+        self.show_canvas_updates = False
         self.full_canvas = Image.new('RGBA', (LiveCanvas.final_canvas_width, LiveCanvas.final_canvas_height))
 
         self.connected: bool = False
@@ -109,7 +109,7 @@ class LiveCanvas:
 
                     case {"payload": {"data": {"subscribe": {"data": {"__typename": "DiffFrameMessageData", "name": difference_url}}}}, "id": difference_canvas_id}:
                         if self.show_canvas_updates:
-                            print(f"{self.now()} {GREEN}Recieved canvas update for canvas {AQUA}{difference_canvas_id}{R}")
+                            print(f"{self.now()} {GREEN}Received canvas update for canvas {AQUA}{difference_canvas_id}{R}")
 
                         difference_canvas_id = int(difference_canvas_id) - 2
 
