@@ -49,7 +49,7 @@ class PixelClient:
             return diff.priority
 
         if self.chief.priority_image:
-            random_index = 0
+            random_index = 0  # because after weighted shuffle we take the first inex
             self.differences.sort(reverse=True, key=weighted_sort)
 
         difference = self.differences[random_index]

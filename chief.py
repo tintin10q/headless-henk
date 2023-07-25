@@ -343,7 +343,7 @@ class ChiefClient:
             await self.ws.send(json.dumps(message))
         except websockets.ConnectionClosedError:
             print(f"{self.now()} {RED} Could not send {AQUA}{message_type}{RED} message to chief because the connection is closed. {RESET}")
-            print("Now we need to try and reconnect but for now just throwing timedOut")
+            print("Now we need to try and reconnect")
             raise TimeoutError()
         except (websockets.WebSocketException) as error:
             print(f"{self.now()} {RED} Could not send {AQUA}{message_type}{RED} message to chief :( moving on.. {RESET}{error=}")
@@ -367,6 +367,26 @@ class ChiefClient:
 
     async def send_place_msg(self, x: int, y: int, color: int):
         await self.send_message('place', {'x': x, 'y': y, 'color': color})
+
+    @staticmethod
+    async def run(chief: 'ChiefClient'):
+        while True:
+            try:
+                await chief.connect()
+            except TimeoutError:
+                print(f"{chief.now()} {RED}Chief Timed out, reconnecting!{RESET}")
+            except Exception as error:
+                print(f"{chief.now()} {RED}Something went wrong with Chief ({error=}) reconnecting!{RESET}")
+            except:
+                print(f"{chief.now()} {RED}Something unknown went wrong with Chief reconnecting!{RESET}")
+
+            chief.connected = False
+            chief.order_image = None
+            chief.priority_image = None
+
+
+
+
 
 
 if __name__ == '__main__':
