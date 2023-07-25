@@ -263,21 +263,21 @@ class Client:
             try:
                 data = json.loads(message)
                 if 'type' not in data:
-                    return await self.log_error('invalidPayload', 'noType')
+                    return self.log_error('invalidPayload', 'noType')
                 message_type = data['type']
                 payload = data.get("payload", None)
                 await self.handle_message(message_type, payload)
 
 
             except json.JSONDecodeError:
-                await self.log_error('invalidMessage', 'failedToParseJSON')
+                self.log_error('invalidMessage', 'failedToParseJSON')
             except reddit.RateLimitLimitReached as e:
                 # This should come from the ping message if self.ratelimited = True, that happens if place pixel hits too many rate limits. We do it this way because place pixel is in another thread
                 raise e
             except Exception as e:
                 print(f"{self.now()} {RED}Error processing message: {e}")
                 pprint(message)
-                await self.log_error(str(type(e)), str(e))
+                self.log_error(str(type(e)), str(e))
 
                 if isinstance(e, TimeoutError):
                     raise e
@@ -356,12 +356,11 @@ class Client:
         if message_type != 'pong' or self.config.pingpong:
             printc(GREEN + f"{self.now()} {GREEN}Sent message: {R}{message}")
 
-    async def log_error(self, error_type, error_detail):
+    def log_error(self, error_type, error_detail):
         """ Log the error, only the server can actually send errors to us """
         print(f"{self.now()} {RED}Something went wrong: {PURPLE}{error_type}{RED},{PURPLE}{error_detail}{R}")
         # error_message = { 'type': 'error', 'payload': { 'type': error_type, 'detail': error_detail } }
         # print(RED + f"Sending error message: {error_type} with {error_detail}" + R)
-        # await self.websocket.send(json.dumps(error_message))
 
     async def handle_message(self, message_type: str, payload: dict | str | None):
         # Todo remove with : {payload}
@@ -404,7 +403,7 @@ class Client:
                 print(RED, "Got error from the server!", R, end="")
                 pprint(payload)
             case _:
-                await self.log_error('invalidPayload', 'unknownType')
+                self.log_error('invalidPayload', 'unknownType')
 
     async def handle_hello(self, payload):
         """
@@ -416,9 +415,11 @@ class Client:
         3. Get the orders
         4. Set the place capability
         """
-        self.id = payload['id']
-        self.keepaliveInterval = payload['keepaliveInterval']
-        self.keepaliveTimeout = payload['keepaliveTimeout']
+        print(f"{self.now()}{GREEN}Handeling hello{R}")
+        if not self.id:
+            self.id = payload['id']
+            self.keepaliveInterval = payload['keepaliveInterval']
+            self.keepaliveTimeout = payload['keepaliveTimeout']
 
         print(f"{self.now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
