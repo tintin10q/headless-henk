@@ -1,11 +1,14 @@
 import os.path
 import random
 
+from PixelClient import PixelClient
+from chief import ChiefClient
 from client import Client
 from colors import GREEN, RED, RESET, AQUA, YELLOW, LIGHTRED, BLUE, WHITE
 from config import load_config, load_accounts, load_tokens_cache_toml, accountsfilepath, load_config_without_auth_without_cache, cache_auth_token
 import asyncio
 
+from live_canvas import LiveCanvas
 from now import now
 
 import login
@@ -51,15 +54,21 @@ async def run_with_accounts_toml():
 
         configs.append(config)
 
-    clients = [Client(config) for config in configs]
 
-    if not clients:
+    if not configs:
         print(f"{now()} {LIGHTRED}There were no valid clients in {AQUA}{accountsfilepath}{RESET}. {BLUE}Make sure you have an internet connection and the right password. Change the accounts and try again.{RESET}")
         return
 
-    run_client_coreroutines = [Client.run_client(client, delay=index * 15) for index, client in enumerate(clients)]
+    # We actually have clients, make a connection to chief
+    config = load_config_without_auth_without_cache()
+    config.version + '-' + str(len(configs))
+    chief = ChiefClient(config.chief_host)
+    live_canvas = LiveCanvas(config.reddit_uri_wss, config.canvas_indexes)
+    clients = [PixelClient(config, chief, live_canvas) for config in configs]
 
-    await asyncio.gather(*run_client_coreroutines)
+    run_client_coreroutines = [PixelClient.run(client, delay=index * 30) for index, client in enumerate(clients)]
+
+    await asyncio.gather(ChiefClient.run_client(chief), live_canvas.connect(), *run_client_coreroutines)
 
 
 async def metdiebanaan():

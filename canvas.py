@@ -4,6 +4,7 @@ from typing import List, Literal, Tuple
 from io import BytesIO
 
 import httpx
+import requests
 from PIL import Image
 
 import reddit
@@ -13,8 +14,9 @@ from now import now_usr
 
 async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = None):
     canvas_url = await reddit.get_canvas_url(canvas_id, username=username)
-    async with httpx.AsyncClient() as client:
-        response = await client.get(canvas_url)
+    # async with httpx.AsyncClient() as client:
+    #     response = await client.get(canvas_url)
+    response = requests.get(canvas_url)
     printc(f'{now_usr(username=username)} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
     # response = requests.get(canvas_url)
     # response.raise_for_status()
@@ -49,7 +51,6 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
 
             get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
 
-
     try:
         await asyncio.gather(*get_canvas_coroutines)
     except RuntimeError as e:
@@ -75,22 +76,20 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
     # Create the final canvas image.
     full_canvas = Image.new('RGBA', (final_canvas_width, final_canvas_height))
 
-    for i in range(6):  # There are 6 canvases
-        if i in canvas_parts:
-            canvas_part = canvas_parts[i]
-            x = 1000 * i % 3000
-            y = 1000 if i > 2 else 0
-            # print(i, x,y)
-            full_canvas.paste(canvas_part, (x, y))
+    # for i in range(6):  # There are 6 canvases
+    if i in canvas_parts:
+        canvas_part = canvas_parts[i]
+        x = 1000 * i % 3000
+        y = 1000 if i > 2 else 0
+        # print(i, x,y)
+        full_canvas.paste(canvas_part, (x, y))
 
     return full_canvas
 
 
 def download_and_save_canvas():
     # Replace the image_ids list with the actual IDs of the available parts.
-    image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [
-        0, 1, 2, 3, 4, 5
-    ]
+    image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [0, 1, 2, 3, 4, 5]
 
     async def go():
         try:

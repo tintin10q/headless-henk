@@ -32,9 +32,9 @@ class Client:
     Its simple, we receive messages in receive_message and then the handle_message function handles them.
 
     """
-    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected', 'rate_limited'
+    __slots__ = 'chief_host', 'uri', 'websocket', 'config', 'current_order', 'differences', 'place_cooldown', 'can_place', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'place_timer', 'pong_timer', 'priority_image', 'order_image', 'connected', 'rate_limited', 'not_connected_times', 'try_connect_again'
 
-    place_delay = 7
+    place_delay = 3
 
     def __init__(self, config: Config = None):
         if config is None:
@@ -66,6 +66,9 @@ class Client:
 
         # Set this to the number (or just true) it was rate limited to throw reddit.RateLimitLimitReached when the next ping message comes in
         self.rate_limited: int = False
+        self.try_connect_again: int = False
+
+        self.not_connected_times = 0
 
     async def connect(self):
         printc(f"{self.now()} {GREEN}Checking reddit token...")
@@ -100,7 +103,16 @@ class Client:
         printc(f"{self.now()} {AQUA}== Starting to place pixel =={RESET}")
 
         if not self.id:  # this may be out of date after a disconnect.
+            self.not_connected_times += 1
             print(f"{self.now()} {GREEN}Never yet connected to chief (we dont have an id yet!) trying again in {Client.place_delay} seconds")
+            print(f"{self.order_image}")
+            self.not_connected_times += 1
+
+            if self.not_connected_times > 5:
+                print(f"{self.now()} {GREEN}Restarting client not yet connected reason")
+                self.try_connect_again = True
+
+
             self.place_timer = threading.Timer(Client.place_delay, self.place_pixel)
             self.place_timer.daemon = True
             self.place_timer.start()
@@ -108,14 +120,14 @@ class Client:
 
         loop2 = asyncio.new_event_loop()
 
-        if not self.order_image:  # It can happen that we do not have an order image yet
+        if not self.order_image:  # It can happen that we do not have an chief image yet
             print(f"{self.now()} {GREEN}No order image for some reason? Downloading it again{RESET}")
 
-            if not self.current_order:  # If we have no order we can not place a pixel
+            if not self.current_order:  # If we have no chief we can not place a pixel
                 print(f"{self.now()} {YELLOW}The client has no order yet. Sending getOrder message!{RESET}")
                 if self.connected:
                     loop2.run_until_complete(self.send_getOrder())
-                    print(f"{self.now()} {GREEN}Send order message! Trying to place pixel again in {AQUA}30{GREEN} seconds{RESET}")
+                    print(f"{self.now()} {GREEN}Send chief message! Trying to place pixel again in {AQUA}30{GREEN} seconds{RESET}")
                 else:
                     print(f"{self.now()} {RED}The client is currently not connected to chief. Schedule place pixel again in {AQUA}30{RED} seconds{STOP}")
                 self.place_timer = threading.Timer(30, self.place_pixel)
@@ -259,24 +271,28 @@ class Client:
             handle_message actually does something with the message
         """
         async for message in self.websocket:
+
+            if self.try_connect_again:
+                raise TimeoutError("Try reconnect")
+
             try:
                 data = json.loads(message)
                 if 'type' not in data:
-                    return await self.log_error('invalidPayload', 'noType')
+                    return self.log_error('invalidPayload', 'noType')
                 message_type = data['type']
                 payload = data.get("payload", None)
                 await self.handle_message(message_type, payload)
 
 
             except json.JSONDecodeError:
-                await self.log_error('invalidMessage', 'failedToParseJSON')
+                self.log_error('invalidMessage', 'failedToParseJSON')
             except reddit.RateLimitLimitReached as e:
                 # This should come from the ping message if self.ratelimited = True, that happens if place pixel hits too many rate limits. We do it this way because place pixel is in another thread
                 raise e
             except Exception as e:
                 print(f"{self.now()} {RED}Error processing message: {e}")
                 pprint(message)
-                await self.log_error(str(type(e)), str(e))
+                self.log_error(str(type(e)), str(e))
 
                 if isinstance(e, TimeoutError):
                     raise e
@@ -286,7 +302,7 @@ class Client:
 
     async def send_getOrder(self):
         # Handle the 'getOrder' message
-        # Send the 'order' message with the latest orders
+        # Send the 'chief' message with the latest orders
         await self.send_message("getOrder")
 
     async def send_getStats(self):
@@ -303,8 +319,8 @@ class Client:
     async def send_getSubscriptions(self):
         print("get subscriptions")
 
-    async def send_disable_capability(self, payload):
-        print("disable capability")
+    async def send_disable_capability(self):
+        raise NotImplemented()
 
     async def send_enable_place_capability(self):
         await self.send_message("enableCapability", "place")
@@ -355,12 +371,11 @@ class Client:
         if message_type != 'pong' or self.config.pingpong:
             printc(GREEN + f"{self.now()} {GREEN}Sent message: {R}{message}")
 
-    async def log_error(self, error_type, error_detail):
+    def log_error(self, error_type, error_detail):
         """ Log the error, only the server can actually send errors to us """
         print(f"{self.now()} {RED}Something went wrong: {PURPLE}{error_type}{RED},{PURPLE}{error_detail}{R}")
         # error_message = { 'type': 'error', 'payload': { 'type': error_type, 'detail': error_detail } }
         # print(RED + f"Sending error message: {error_type} with {error_detail}" + R)
-        # await self.websocket.send(json.dumps(error_message))
 
     async def handle_message(self, message_type: str, payload: dict | str | None):
         # Todo remove with : {payload}
@@ -375,7 +390,7 @@ class Client:
                 await self.handle_hello(payload)
             case 'brandUpdated':
                 print(f"{self.now()} {GREEN}Brand has been updated successfully!{R}")
-            case 'order':
+            case 'chief':
                 try:
                     await self.handle_order(payload)
                 except asyncio.exceptions.TimeoutError:
@@ -403,7 +418,7 @@ class Client:
                 print(RED, "Got error from the server!", R, end="")
                 pprint(payload)
             case _:
-                await self.log_error('invalidPayload', 'unknownType')
+                self.log_error('invalidPayload', 'unknownType')
 
     async def handle_hello(self, payload):
         """
@@ -415,9 +430,11 @@ class Client:
         3. Get the orders
         4. Set the place capability
         """
-        self.id = payload['id']
-        self.keepaliveInterval = payload['keepaliveInterval']
-        self.keepaliveTimeout = payload['keepaliveTimeout']
+        print(f"{self.now()}{GREEN}Handeling hello{R}")
+        if not self.id:
+            self.id = payload['id']
+            self.keepaliveInterval = payload['keepaliveInterval']
+            self.keepaliveTimeout = payload['keepaliveTimeout']
 
         print(f"{self.now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
@@ -484,7 +501,7 @@ class Client:
                 raise ValueError("Invalid stats message from server")
 
     async def handle_order(self, payload):
-        print(f"{self.now()} {GREEN}Starting to handle order{R} 📧")
+        print(f"{self.now()} {GREEN}Starting to handle chief{R} 📧")
         self.current_order = parse_order(payload)
         print(self.current_order)
 
@@ -493,11 +510,11 @@ class Client:
         self.pong_timer.daemon = True
         self.pong_timer.start()
 
-        # download the order image
+        # download the chief image
         self.order_image = await images.download_order_image(self.current_order.images.order,
                                                              save_images=self.config.save_images,
                                                              username=self.config.reddit_username)
-        print(f"{self.now()} {GREEN}Downloaded order image{R}")
+        print(f"{self.now()} {GREEN}Downloaded chief image{R}")
 
         # download the priority map
         if self.current_order.images.priority:
@@ -518,7 +535,7 @@ class Client:
         # Stop the pong timer
         self.pong_timer.cancel()
 
-        print(f"{self.now()} {GREEN}Done handling order ")
+        print(f"{self.now()} {GREEN}Done handling chief ")
 
     @staticmethod
     def handle_announcement(payload):
@@ -575,7 +592,7 @@ class Client:
     @staticmethod
     async def run_client(client: "Client", delay: int = None):
         if isinstance(delay, int) and delay > -1:
-            delay += random.randint(0, 15)
+            delay += random.randint(-2, 5)
             print(
                 f"{now_usr(username=client.config.reddit_username)} {GREEN}Starting {AQUA}{client.config.reddit_username or f'{GREEN}client'}{GREEN} in {AQUA}{delay}{AQUA}{GREEN} seconds{R}")
             await asyncio.sleep(delay)

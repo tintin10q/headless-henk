@@ -93,8 +93,8 @@ def parse_order(payload: dict) -> Order:
     | message   | string?             | The message describing the changes made in this order, or null if no message was provided. |
     | createdAt | string (datetime)   | The timestamp this order was created at                                                    |
     | creator   | object? (see below) | The user that created this order, or null if the user wishes to remain anonymous.          |
-    | images    | object (see below)  | The images related to this order                                                           |
-    | size      | object (see below)  | The size of the images related to the order                                                |
+    | images    | object (see below)  | The images related to this order|
+    | size      | object (see below)  | The size of the images related to the order|
     | offset	| object (see below)  | The offset of the image on the canvas                                                      |
 
     ##### Creator Format
@@ -108,7 +108,7 @@ def parse_order(payload: dict) -> Order:
 
     | name     | type          | description                                                                                                    |
     |----------|---------------|----------------------------------------------------------------------------------------------------------------|
-    | order    | string (url)  | The URL to the order image                                                                                     |
+    | order | string (url)  | The URL to the order image                                                                                     |
     | priority | string? (url) | The URL to the [priority mapping image](../client/PRIORITY-MAPPINGS.md), or null if the order doesn't have one |
 
     ##### Size Format
@@ -128,6 +128,7 @@ def parse_order(payload: dict) -> Order:
 
 
     """
+
     match payload:
         case {"id": str(id), "message": message, "createdAt": str(createdAt), "creator": creator, "images": images, "size": size, "offset": offset}:
 
