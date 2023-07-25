@@ -51,7 +51,6 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
 
             get_canvas_coroutines.append(get_canvaspart(_index=i, _image_id=image_id))
 
-
     try:
         await asyncio.gather(*get_canvas_coroutines)
     except RuntimeError as e:
@@ -77,22 +76,20 @@ async def build_canvas_image(image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]], u
     # Create the final canvas image.
     full_canvas = Image.new('RGBA', (final_canvas_width, final_canvas_height))
 
-    for i in range(6):  # There are 6 canvases
-        if i in canvas_parts:
-            canvas_part = canvas_parts[i]
-            x = 1000 * i % 3000
-            y = 1000 if i > 2 else 0
-            # print(i, x,y)
-            full_canvas.paste(canvas_part, (x, y))
+    # for i in range(6):  # There are 6 canvases
+    if i in canvas_parts:
+        canvas_part = canvas_parts[i]
+        x = 1000 * i % 3000
+        y = 1000 if i > 2 else 0
+        # print(i, x,y)
+        full_canvas.paste(canvas_part, (x, y))
 
     return full_canvas
 
 
 def download_and_save_canvas():
     # Replace the image_ids list with the actual IDs of the available parts.
-    image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [
-        0, 1, 2, 3, 4, 5
-    ]
+    image_ids: List[Literal[0, 1, 2, 3, 4, 5, None]] = [0, 1, 2, 3, 4, 5]
 
     async def go():
         try:

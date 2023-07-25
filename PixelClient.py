@@ -12,20 +12,18 @@ from config import Config
 
 from chief import ChiefClient
 
+from live_canvas import LiveCanvas
+
 
 class PixelClient:
     place_delay = 7
 
-    def __init__(self, config: Config, chief: ChiefClient):
+    def __init__(self, config: Config, chief: ChiefClient, live_canvas: LiveCanvas):
         self.config = config
         self.chief = chief
         self.place_cooldown = PixelClient.place_delay
-
-    def start(self):
-        ...
-
-    def stop(self):
-        ...
+        self.live_canvas = live_canvas
+        self.differences = []
 
     async def place_pixel(self, *, after: int):
         """ Actually place a pixel hype"""
@@ -33,29 +31,7 @@ class PixelClient:
             f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{PixelClient.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         await asyncio.sleep(after)
         printc(f"{self.now()} {AQUA}== Starting to place pixel for {self.config.reddit_username}=={RESET}")
-
-        try:
-            # self.differences = images.get_pixel_differences() # should use live canvas!
-            self.differences = await images.get_pixel_differences_with_canvas_download(order=self.chief.current_order,
-                                                                                       canvas_indexes=self.config.canvas_indexes,
-                                                                                       order_image=self.chief.order_image,
-                                                                                       priority_image=self.chief.priority_image,
-                                                                                       save_images=self.config.save_images,
-                                                                                       username=self.config.reddit_username)
-        except (asyncio.CancelledError, asyncio.TimeoutError):
-            print(f"{self.now()} {YELLOW}Timed while getting differences trying one more time!")
-            try:
-                self.differences = await images.get_pixel_differences_with_canvas_download(order=self.chief.current_order,
-                                                                                           canvas_indexes=self.config.canvas_indexes,
-                                                                                           order_image=self.chief.order_image,
-                                                                                           priority_image=self.chief.priority_image,
-                                                                                           save_images=self.config.save_images,
-                                                                                           username=self.config.reddit_username)
-            except (asyncio.CancelledError, asyncio.TimeoutError):
-                print(f"{self.now()} {YELLOW}Timed out while differences again! Giving up!")
-                # SCHEDULE NEXT PLACE!
-                return
-
+        self.differences = images.get_pixel_differences(order=self.chief.current_order, canvas=self.live_canvas.canvas, chief_template=self.chief.order_image, username=self.config.reddit_username)
         print(f"{self.now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
         # Got differences
@@ -64,10 +40,6 @@ class PixelClient:
 
             print(
                 f"{self.now()} {LIGHTGREEN}Attempt to place pixel again in {AQUA}{PixelClient.place_delay}{LIGHTGREEN} seconds!{R}")
-
-            self.place_timer = threading.Timer(PixelClient.place_delay, self.place_pixel)
-            self.place_timer.daemon = True
-            self.place_timer.start()
             return
 
         # Check if we have priority, otherwise pick a random pixel and place it
@@ -131,12 +103,6 @@ class PixelClient:
             print(f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{self.place_cooldown + PixelClient.place_delay}{LIGHTGREEN} seconds!{GREEN} (not sending coords because the rate limit was hit)")
             return
 
-        except reddit.RateLimitLimitReached as e:
-            self.rate_limited = e.rate_limit_times
-            print(f"{self.now()} {RED} Rate limit limit reached! Not starting new pixel timer for {self.config.reddit_username}. {GREEN}This client will exit with the next ping message from chief.{RESET}")
-            # Don't start new place pixel thread
-            return
-
         if actually_send_place_now:
             # Scheduled next place task
             print(f"{self.now()} {YELLOW}Not sending disable place now{STOP}")
@@ -159,9 +125,16 @@ class PixelClient:
 
     @staticmethod
     async def run(client: 'PixelClient', delay=0):
+        await client.live_canvas.is_connected()
+        print(f"{client.now()} {GREEN}Live Canvas got connected!")
         await client.chief.has_canvas_future()
         print(f"{client.now()} {GREEN}Chief got connected! Starting {client.config.reddit_username} in {AQUA}{delay}{GREEN} seconds{R}")
         await asyncio.sleep(delay)
         while True:
             client.place_cooldown = reddit.get_place_cooldown(authorization=client.config.auth_token, username=client.config.reddit_username)
-            await client.place_pixel(after=client.place_cooldown)
+
+            try:
+                await client.place_pixel(after=client.place_cooldown)
+            except reddit.RateLimitLimitReached as e:
+                print(f"{client.now()} {RED} Rate limit limit reached! Not starting again for {client.config.reddit_username}. {GREEN}This client will exit with the next ping message from chief.{RESET}")
+                return

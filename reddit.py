@@ -228,57 +228,6 @@ async def get_canvas_url(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = N
             raise ValueError(f"Could not fetch canvas with id: {canvas_id}")
 
 
-class LiveCanvas:
-    """ A live connection which updates the same image in memory with the difference, this way we don't have to fetch the whole canvas every time
-        todo make this actually work
-    """
-
-    def __init__(self, config):
-        self.websocket = None
-        self.config = config
-        self.authorization = get_anon_authorization()
-
-    async def connect(self):
-        async with websockets.connect(self.config.reddit_uri_wss, origin="https://garlic-bread.reddit.com") as websocket:
-            self.websocket = websocket
-            connection_init_message = {
-                "type": 'connection_init',
-                "payload": {
-                    "Authorization": self.authorization
-                }
-            }
-
-            printc(now(), f"{GREEN} Live canvas connected!")
-            await websocket.send(json.dumps(connection_init_message))
-
-            result = await websocket.recv()  # This should be {"type":"connection_ack"}
-            printc(now(), f"{GREEN} Live canvas connected!!{RESET}{result}")
-
-            message_id = 2
-            for canvas_id in self.config.canvas_indexes:
-                url_message = {
-                    "id": str(message_id),
-                    "type": "start",
-                    "payload": {
-                        "variables": {
-                            "input": {
-                                "channel": {
-                                    "teamOwner": "GARLICBREAD",
-                                    "category": "CANVAS",
-                                    "tag": str(canvas_id)
-                                }
-                            }
-                        },
-                        "extension": {},
-                        "operationName": "replace",
-                        "query": "subscription replace($input: SubscribeInput!) { subscribe(input: $input) { id ... on BasicMessage { data { __typename ... on FullFrameMessageData { __typename name timestamp } } __typename } __typename }}"
-                    }
-                }
-                message_id += 1
-                await websocket.send(json.dumps(url_message))
-
-            async for message in self.websocket:
-                print("GOT:", message)
 
 
 def get_place_cooldown(authorization: str, *, username: str = None) -> int:

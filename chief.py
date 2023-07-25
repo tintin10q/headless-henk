@@ -35,7 +35,7 @@ class ChiefClient:
         self.keepaliveInterval = 1
 
         self.chief_host = chief_host
-        self.pingpong = True
+        self.pingpong = False
         self.pong_timer: threading.Timer | None = None
         self.connected: bool = False
         self.current_order: Order | None = None
