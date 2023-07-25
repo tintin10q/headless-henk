@@ -4,6 +4,7 @@ from typing import List, Literal, Tuple
 from io import BytesIO
 
 import httpx
+import requests
 from PIL import Image
 
 import reddit
@@ -13,8 +14,9 @@ from now import now_usr
 
 async def get_canvas_part(canvas_id: Literal[0, 1, 2, 3, 4, 5], username: str = None):
     canvas_url = await reddit.get_canvas_url(canvas_id, username=username)
-    async with httpx.AsyncClient() as client:
-        response = await client.get(canvas_url)
+    # async with httpx.AsyncClient() as client:
+    #     response = await client.get(canvas_url)
+    response = requests.get(canvas_url)
     printc(f'{now_usr(username=username)} {GREEN}Downloading canvas from {BLUE}{canvas_url}')
     # response = requests.get(canvas_url)
     # response.raise_for_status()

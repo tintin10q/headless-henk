@@ -226,6 +226,8 @@ STOP_CROSSOUT = STOP_STIKE
 
 REVEAL = STOP_HIDE
 
+R = RESET
+
 
 def printc(*args: object, STOPPER: object = STOP, **kwargs: object, ) -> object:
     """Automatically puts a color stop sign at the end of the print """
@@ -236,7 +238,7 @@ def printc(*args: object, STOPPER: object = STOP, **kwargs: object, ) -> object:
 
 
 def show_table(up_to=110):
-    """ Shows table of colors so you can see what numbers you can use. """
+    """ Shows table of colors, so you can see what numbers you can use. """
     STOP = '\033[0m'  # No Color
     for i in range(up_to):
         print(f'\033[0;{i}m', i, end=f'{STOP} ')

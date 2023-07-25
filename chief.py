@@ -12,20 +12,19 @@ from colors import *
 import datetime
 
 from parse_order import parse_order, Order
-
-R = RESET
+from reddit import Coordinates
 
 SAVE_IMAGES = False
 
 
-class LiveOrder:
+class ChiefClient:
     """The idea """
 
     author: str = "Quinten-C"
-    name: str = 'Headless-Henk-LiveOrder'
-    version: str = '0.0.1'
+    version: str = '4.0.0'
+    name: str = 'Headless-Henk'
 
-    brand = {"author": author, "mame": name, "version": version}
+    brand = {"author": author, "name": name, "version": version}
 
     __slots__ = 'chief_host', 'order_image', 'priority_image', 'pingpong', 'pong_timer', 'connected', 'current_order', 'ws', 'id', 'keepaliveTimeout', 'keepaliveInterval', 'uri'
 
@@ -44,6 +43,7 @@ class LiveOrder:
 
         self.order_image = None
         self.priority_image = None
+        self.current_order: Order | None = None
 
         self.uri = f"wss://{chief_host}/ws"  # Replace with your server's WebSocket endpoint
 
@@ -104,6 +104,16 @@ class LiveOrder:
                     self.pong_timer.cancel()
                     await self.send_pong()
                     await self.handle_message(message_type, payload)
+            case 'confirmPlace':
+                self.handle_confirmPlace()
+            case 'stats':
+                self.handle_stats(payload)
+            case 'announcement':
+                self.handle_announcement(payload)
+            case 'enabledCapability':
+                self.handle_enableCapability(payload)
+            case 'disabledCapability':
+                self.handle_disabledCapability(payload)
             case 'subscribed':
                 self.handle_subscribed(payload)
             case 'unsubscribed':
@@ -114,7 +124,62 @@ class LiveOrder:
                 print(RED, "Got error from the server!", R, end="")
                 pprint(payload)
             case _:
+                print(f"{self.now()} {RED} Something went wrong with message {BLUE}{message_type}")
                 self.log_error('invalidPayload', 'unknownType')
+
+    def handle_stats(self, payload: dict):
+        match payload:
+
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn),
+                  "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections),
+                  "capabilities": {'place': int(place), 'placeNow': int(placenow),
+                                   'priorityMappings': int(priorityMappings)}}:
+                dt_object = datetime.datetime.fromtimestamp(date / 999)
+                nice_date = dt_object.strftime('%Y %b %d %H:%M:%S')
+                print(f"""{PURPLE}--== Server Stats ==--
+{GREEN}Time: {AQUA}{nice_date}{RESET}
+{GREEN}Incoming  messages: {AQUA}{messageIn}
+{GREEN}Outgoing  messages: {AQUA}{messageOut}{RESET}
+{GREEN}Socket Connections: {AQUA}{socketConnections}
+{GREEN}Active Connections: {AQUA}{activeConnections}
+{PURPLE}--== Capability Stats ==--
+{GREEN}Able to place: {AQUA}{place}/{activeConnections}{RESET}
+{GREEN}Able to place now: {AQUA}{placenow}/{activeConnections}{RESET}
+{GREEN}Understands priority mappings: {AQUA}{priorityMappings}/{activeConnections}{RESET}
+                """)
+            case {"activeConnections": int(activeConnections), "messagesIn": int(messageIn),
+                  "messagesOut": int(messageOut), "date": int(date), "socketConnections": int(socketConnections)}:
+                dt_object = datetime.datetime.fromtimestamp(date / 1000)
+                nice_date = dt_object.strftime('%Y-%d %H:%M:%S')
+                print(f"""{PURPLE}--== Stats ==--
+{GREEN}Active Connections: {AQUA}{activeConnections}
+{GREEN}Socket Connections: {AQUA}{socketConnections}
+{GREEN}Incoming  messages: {AQUA}{messageIn}
+{GREEN}Outgoing  messages: {AQUA}{messageOut}{RESET}
+{GREEN}Date: {AQUA}{RESET}
+""")
+            case _:
+                raise ValueError("Invalid stats message from server")
+
+    def handle_announcement(self, payload):
+        match payload:
+            case {"message": str(message), "important": important}:
+                print(
+                    f"\n{LIGHTPURPLE}{PURPLE_BG + BLINK + BEEP if important else ''}---=== Chief {'IMPORTANT ' if important else ''}Announcement ===---{R}"
+                    f"\n{self.now()} {message}\n")
+            case _:
+                print(self.now(), "Got announcement but couldn't parse it...🤔")
+                pprint(payload)
+                raise ValueError(f"Could not parse announcement: {payload}")
+
+    def handle_enableCapability(self, payload):
+        printc(f"{self.now()} {GREEN}Enabled {AQUA}{payload}{GREEN} capability")
+
+    def handle_disabledCapability(self, payload):
+        printc(f"{self.now()} {RED}Disabled {AQUA}{payload}{GREEN} capability")
+
+    def handle_confirmPlace(self):
+        printc(f"{self.now()} {BLUE}Chief successfully received pixel placement{RESET}")
 
     def handle_unsubscribed(self, payload: str):
         print(f"{self.now()} {RED}Disabled {AQUA}{payload}{RED} subscription{R}")
@@ -154,7 +219,7 @@ class LiveOrder:
         print(f"{self.now()} {GREEN}Obtained Client id: {AQUA}{self.id}")
 
         await self.send_brand()
-        await self.send_getOrder()
+        await asyncio.gather(self.send_getOrder(), self.send_enable_priorityMappings_capability(), self.send_enable_place_capability())
 
         await self.subscribe_to_orders()
 
@@ -163,8 +228,26 @@ class LiveOrder:
 
     async def send_getOrder(self):
         # Handle the 'getOrder' message
-        # Send the 'order' message with the latest orders
+        # Send the 'chief' message with the latest orders
         await self.send_message("getOrder")
+
+    async def send_getSubscriptions(self):
+        print("get subscriptions")
+
+    async def send_disable_capability(self):
+        raise NotImplemented()
+
+    async def send_enable_place_capability(self):
+        await self.send_message("enableCapability", "place")
+
+    async def send_enable_placeNOW_capability(self):
+        await self.send_message("enableCapability", "placeNow")
+
+    async def send_disable_placeNOW_capability(self):
+        await self.send_message("disableCapability", "placeNow")
+
+    async def send_enable_priorityMappings_capability(self):
+        await self.send_message("enableCapability", "priorityMappings")
 
     async def send_getStats(self):
         # Handle the 'getStats' message
@@ -177,16 +260,19 @@ class LiveOrder:
     async def send_subscribe(self, payload):
         print("got get subscription message")
 
+    async def send_getCapabilities(self):
+        print(f"{self.now()} Received get capabilities message")
+
     async def subscribe_to_orders(self):
         await self.send_message("subscribe", "orders")
 
     async def send_brand(self):
         # Handle the 'brand' message
         # Validate the brand information and send 'brandUpdated' or 'invalidPayload' error
-        await self.send_message('brand', LiveOrder.brand)
+        await self.send_message('brand', ChiefClient.brand)
 
     async def handle_order(self, payload):
-        print(f"{self.now()} {GREEN}Starting to handle order{R} 📧")
+        print(f"{self.now()} {GREEN}Starting to handle chief{R} 📧")
         self.current_order = parse_order(payload)
         print(self.current_order)
 
@@ -195,10 +281,10 @@ class LiveOrder:
         self.pong_timer.daemon = True
         self.pong_timer.start()
 
-        # download the order image
+        # download the chief image
         self.order_image = await images.download_order_image(self.current_order.images.order,
                                                              save_images=SAVE_IMAGES)
-        print(f"{self.now()} {GREEN}Downloaded order image{R}")
+        print(f"{self.now()} {GREEN}Downloaded chief image{R}")
 
         # download the priority map
         if self.current_order.images.priority:
@@ -211,7 +297,7 @@ class LiveOrder:
         # Stop the pong timer
         self.pong_timer.cancel()
 
-        print(f"{self.now()} {GREEN}Done handling order ")
+        print(f"{self.now()} {GREEN}Done handling order{RESET}")
 
     async def handle_ping(self):
         if not (self.pong_timer and not self.pong_timer.finished):
@@ -231,7 +317,6 @@ class LiveOrder:
 
     async def send_pong(self):
         await self.send_message('pong')
-
 
     async def send_message(self, message_type: Literal[
         'pong', 'brand', 'getOrder', 'getStats', 'getCapabilities', 'enableCapability', 'disableCapability', 'getSubscriptions', 'subscribe', 'unsubscribe', 'place'],
@@ -261,16 +346,32 @@ class LiveOrder:
         if message_type != 'pong' or self.pingpong:
             printc(GREEN + f"{self.now()} {GREEN}Sent message: {R}{message}")
 
-    @staticmethod
-    async def run_LiveOrder(order: 'LiveOrder'):
-        await order.connect()
+    async def has_canvas_future(self, delay: int = 3):
+        while True:
+            if self.order_image:
+                break
+            else:
+                await asyncio.sleep(delay)
 
+    async def send_pre_place_pixel_messages(self):
+        await self.send_enable_placeNOW_capability()
 
+    async def send_post_place_pixel_messages(self, coordinates: Coordinates, colorIndex: int = 3):
+        await asyncio.gather(self.send_place_msg(x=coordinates.x, y=coordinates.y, color=colorIndex), self.send_disable_placeNOW_capability())
+
+    async def send_place_msg(self, x: int, y: int, color: int):
+        await self.send_message('place', {'x': x, 'y': y, 'color': color})
 
 
 if __name__ == '__main__':
     default_chief_host = 'chief.placenl.nl'
-    order = LiveOrder(default_chief_host)
+    chief = ChiefClient(default_chief_host)
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(LiveOrder.run_LiveOrder(order))
+    loop.run_until_complete(ChiefClient.run_ChiefClient(chief))
 
+"""
+Deze class moet ook de place pixel berichten gaan sturen.
+
+Wat als we dat eerst even niet doen?
+
+"""
