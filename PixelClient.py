@@ -31,7 +31,7 @@ class PixelClient:
             f"{self.now()} {LIGHTGREEN}Placing next pixel in {AQUA}{PixelClient.place_delay:2.2f}{LIGHTGREEN} seconds!{R}")
         await asyncio.sleep(after)
         printc(f"{self.now()} {AQUA}== Starting to place pixel for {self.config.reddit_username}=={RESET}")
-        self.differences = images.get_pixel_differences(order=self.chief.current_order, canvas=self.live_canvas.canvas, chief_template=self.chief.order_image, username=self.config.reddit_username)
+        self.differences = images.get_pixel_differences(order=self.chief.current_order, canvas=self.live_canvas.canvas, chief_template=self.chief.order_image, priority_image=self.chief.priority_image, username=self.config.reddit_username)
         print(f"{self.now()} {GREEN}Found {RED}{len(self.differences)} {R}differences!")
 
         # Got differences
